@@ -4,6 +4,7 @@ import com.example.resourcemanager.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +23,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class TokenService {
     // 令牌秘钥
-    private static String secret = "QBiP3UWy";
+    @Value("${token.secret}")
+    private String secret;
 
     // 令牌有效期（默认30分钟）
     @Value("${token.expireTime}")
@@ -41,12 +43,18 @@ public class TokenService {
     private static final Long MILLIS_MINUTE_TEN = 20 * 60 * 1000L;
 
     //密钥实例
-    private static final SecretKey KEY = Keys.hmacShaKeyFor("CnZ2E44oTjyYMqbWx3idxaKN0J8CgaiOt2RZ".getBytes());
+    private static SecretKey KEY;
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
+
+    @PostConstruct
+    private void init(){
+        System.out.println(secret);
+        KEY = Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     public String createToken(User user) {
         refreshToken(user);

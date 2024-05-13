@@ -36,7 +36,7 @@ public class SecurityConfig {
     @Resource
     UserMapper userMapper;
 
-    @Autowired
+    @Resource
     TokenService tokenService;
 
     @Resource
