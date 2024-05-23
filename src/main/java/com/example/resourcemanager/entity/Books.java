@@ -18,4 +18,5 @@ public class Books {
     private Date edit_time;
     private String cover;
     private String illustrator;
+    private int status;
 }
