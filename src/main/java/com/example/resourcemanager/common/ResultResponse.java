@@ -30,9 +30,7 @@ public class ResultResponse {
     }
 
     public static ResultResponse error(BaseErrorInfoInterface baseErrorInfoInterface) {
-        ResultResponse resultResponse = new ResultResponse();
-        resultResponse.setCode(baseErrorInfoInterface.getResultCode());
-        resultResponse.setMessage(baseErrorInfoInterface.getResultMsg());
+        ResultResponse resultResponse = new ResultResponse(baseErrorInfoInterface);
         return resultResponse;
     }
 
