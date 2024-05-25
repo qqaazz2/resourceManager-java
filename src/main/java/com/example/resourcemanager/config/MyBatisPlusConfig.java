@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @MapperScan("com.example.resourcemanager.mapper")
 public class MyBatisPlusConfig {
-
     @Bean
     public MyMetaObjectHandler metaObjectHandler() {
         return new MyMetaObjectHandler();

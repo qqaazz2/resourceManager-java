@@ -30,21 +30,24 @@ public class BooksController {
     }
 
     @PostMapping("/addBooks")
-    public ResultResponse addBooks(@RequestBody Books books){
+    public ResultResponse addBooks(@RequestBody Books books) {
         Integer id = booksService.addBooks(books);
-        if (null == id) new BizException("4000","新增失败");
+        if (null == id) new BizException("4000", "新增失败");
         return ResultResponse.success();
     }
 
     @GetMapping("/uploadCover")
+
     public ResultResponse uploadCover(@RequestParam MultipartFile[] files) {
-        List<String> list = uploadFile.upload(files, "booksCover");
+        String[] formats = {"jpg", "png"};
+        List<String> list = uploadFile.upload(files, "booksCover", formats);
         return ResultResponse.success(list.get(0));
     }
 
     @GetMapping("/upload")
     public ResultResponse upload(@RequestParam MultipartFile[] files, @RequestParam String name) {
-        List<String> list = uploadFile.upload(files, name);
+        String[] formats = {"epub"};
+        List<String> list = uploadFile.upload(files, name, formats);
         return ResultResponse.success();
     }
 }
