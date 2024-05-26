@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -23,10 +24,10 @@ public class BooksController {
     @Resource
     UploadFile uploadFile;
 
-    @GetMapping("/getList")
-    public ResultResponse getList(@RequestParam int page) {
-        List<Books> list = booksService.getBooksList(page);
-        return ResultResponse.success(list);
+    @PostMapping("/getList")
+    public ResultResponse getList(@RequestParam int page,@RequestParam int size) {
+        Map<String,Object> map = booksService.getBooksList(page,size);
+        return ResultResponse.success(map);
     }
 
     @PostMapping("/addBooks")
@@ -37,7 +38,6 @@ public class BooksController {
     }
 
     @GetMapping("/uploadCover")
-
     public ResultResponse uploadCover(@RequestParam MultipartFile[] files) {
         String[] formats = {"jpg", "png"};
         List<String> list = uploadFile.upload(files, "booksCover", formats);

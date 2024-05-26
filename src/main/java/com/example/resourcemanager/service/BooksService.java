@@ -4,10 +4,11 @@ import com.example.resourcemanager.entity.Books;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public interface BooksService {
-    List<Books> getBooksList(int page);
+    Map<String,Object> getBooksList(int page,int size);
 
     Integer addBooks(Books books);
 }

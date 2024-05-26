@@ -9,18 +9,21 @@ import com.example.resourcemanager.mapper.BooksMapper;
 import com.example.resourcemanager.service.BooksService;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class BooksServiceImpl extends ServiceImpl<BooksMapper, Books> implements BooksService {
-
-    public static Integer size = 10;
-
     @Override
-    public List<Books> getBooksList(int page) {
+    public Map<String,Object> getBooksList(int page,int size) {
         LambdaQueryWrapper<Books> queryWrapper = new QueryWrapper<Books>().lambda();
         List<Books> books = this.page(new Page<>(page, size),queryWrapper).getRecords();
-        return books;
+        Long count = this.count(queryWrapper);
+        Map<String,Object> map = new HashMap<>();
+        map.put("data",books);
+        map.put("count",count);
+        return map;
     }
 
     @Override
