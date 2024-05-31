@@ -31,4 +31,10 @@ public class BooksServiceImpl extends ServiceImpl<BooksMapper, Books> implements
         this.save(books);
         return books.getId();
     }
+
+    @Override
+    public Integer editBooks(Books books) {
+        this.updateById(books);
+        return books.getId();
+    }
 }

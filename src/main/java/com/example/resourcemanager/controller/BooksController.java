@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +25,7 @@ public class BooksController {
     @Resource
     UploadFile uploadFile;
 
-    @PostMapping("/getList")
+    @GetMapping("/getList")
     public ResultResponse getList(@RequestParam int page,@RequestParam int size) {
         Map<String,Object> map = booksService.getBooksList(page,size);
         return ResultResponse.success(map);
@@ -40,14 +41,23 @@ public class BooksController {
     @GetMapping("/uploadCover")
     public ResultResponse uploadCover(@RequestParam MultipartFile[] files) {
         String[] formats = {"jpg", "png"};
-        List<String> list = uploadFile.upload(files, "booksCover", formats);
-        return ResultResponse.success(list.get(0));
+        List<File> list = uploadFile.upload(files, "booksCover", formats);
+        return ResultResponse.success();
     }
 
-    @GetMapping("/upload")
-    public ResultResponse upload(@RequestParam MultipartFile[] files, @RequestParam String name) {
+    @PostMapping("/upload")
+    public ResultResponse upload(@RequestParam MultipartFile[] files,@RequestParam String name) {
         String[] formats = {"epub"};
-        List<String> list = uploadFile.upload(files, name, formats);
+        String pathName = "/books/" + name;
+        List<File> list = uploadFile.upload(files, pathName, formats);
+        return ResultResponse.success();
+    }
+
+    @PostMapping("/editBooks")
+    public ResultResponse editBooks(@RequestBody Books books) {
+        System.out.println(books);
+        Integer id = booksService.editBooks(books);
+        if (null == id) new BizException("4000", "修改失败");
         return ResultResponse.success();
     }
 }

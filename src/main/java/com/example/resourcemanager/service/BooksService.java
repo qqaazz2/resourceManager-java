@@ -11,4 +11,6 @@ public interface BooksService {
     Map<String,Object> getBooksList(int page,int size);
 
     Integer addBooks(Books books);
+
+    Integer editBooks(Books books);
 }
