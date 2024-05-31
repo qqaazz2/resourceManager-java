@@ -20,10 +20,11 @@ public class FileTypeUtils {
         fileTypeMap.put("504b0304140000000800", "zip");
         fileTypeMap.put("526172211a0700cf9073", "rar");
     }
+    public static String suffix;
 
     public static void getFileTypeBySuffix(String fileName, String[] formats) {
-        String suffix = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
-        if(Arrays.stream(formats).anyMatch(suffix::contains)) throw new BizException("4005", "文件上传格式不支持");
+        suffix = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+        if(!(Arrays.stream(formats).anyMatch(suffix::contains))) throw new BizException("4005", "文件上传格式不支持");
     }
 
     public static void getFileTypeByMagicNumber(InputStream inputStream) {
@@ -44,7 +45,7 @@ public class FileTypeUtils {
             e.printStackTrace();
         }
 
-        if(!isTrue) throw new BizException("4005", "文件上传格式不支持");
+        if(!isTrue && !suffix.equals("epub")) throw new BizException("4005", "文件上传格式不支持");
     }
 
     public static String bytesToHexString(byte[] bytes) {
