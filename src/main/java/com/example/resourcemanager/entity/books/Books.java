@@ -1,4 +1,4 @@
-package com.example.resourcemanager.entity;
+package com.example.resourcemanager.entity.books;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -14,13 +14,16 @@ public class Books {
     private Integer id;
     private String name;
     private Date last_read;
-    private Integer read_num;
-    private Integer count;
-    @TableField(fill = FieldFill.INSERT)
-    private Date add_time;
     private Date edit_time;
     private String cover;
     private String author;
     private String illustrator;
-    private int status;
+    private Integer status;
+    @TableField(fill = FieldFill.INSERT)
+    private Date add_time;
+
+    @TableField(exist = false)
+    private Integer read_num;
+    @TableField(exist = false)
+    private Integer count = 0;
 }

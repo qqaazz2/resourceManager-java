@@ -1,9 +1,6 @@
-package com.example.resourcemanager.entity;
+package com.example.resourcemanager.entity.books;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.util.Date;
@@ -21,4 +18,8 @@ public class BooksDetails {
     private Date edit_time;
     private String cover;
     private String name;
+    private String url;
+    @TableLogic
+    private Integer deleted;
+    private Float progress;
 }

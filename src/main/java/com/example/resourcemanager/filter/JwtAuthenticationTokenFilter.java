@@ -30,11 +30,11 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = tokenService.getRequestToken(request);
+            System.out.println(request.getRequestURI());
             if ("/user/login".equals(request.getRequestURI()) || "/user/code".equals(request.getRequestURI())) {
                 filterChain.doFilter(request, response);
                 return;
             }
-
             if (token == null || token.trim().isEmpty()) throw new AuthenticationException("请先登录");
 
             String userName = tokenService.getUserNameFromToken(token);
@@ -55,6 +55,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             ObjectMapper mapper = new ObjectMapper();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().println(mapper.writeValueAsString(ResultResponse.error(ExceptionEnum.NOT_AUTHORITY)));
+            exception.printStackTrace();
         }
     }
 }

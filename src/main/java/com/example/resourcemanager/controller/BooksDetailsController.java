@@ -3,9 +3,9 @@ package com.example.resourcemanager.controller;
 import com.example.resourcemanager.common.BizException;
 import com.example.resourcemanager.common.ResultResponse;
 import com.example.resourcemanager.common.UploadFile;
+import com.example.resourcemanager.entity.books.BooksDetails;
 import com.example.resourcemanager.service.BooksDetailsService;
 import jakarta.annotation.Resource;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,7 +13,6 @@ import java.io.File;
 import java.util.List;
 
 @RestController
-@CrossOrigin
 @RequestMapping("/booksDetails")
 public class BooksDetailsController {
     @Resource
@@ -23,8 +22,8 @@ public class BooksDetailsController {
     BooksDetailsService booksDetailsService;
 
     @GetMapping("/getDetailsList")
-    public ResultResponse getDetailsList(@RequestParam Integer id) {
-        return ResultResponse.success(booksDetailsService.getDetailsList(id));
+    public ResultResponse getDetailsList(@RequestParam Integer id,@RequestParam Integer page,@RequestParam Integer size) {
+        return ResultResponse.success(booksDetailsService.getDetailsList(id,page,size));
     }
 
     @PostMapping("/upload")
@@ -35,6 +34,19 @@ public class BooksDetailsController {
 
         boolean isTrue = booksDetailsService.addDetails(id,list);
         if (!isTrue) new BizException("4000", "书籍创建失败");
+        return ResultResponse.success();
+    }
+
+    @GetMapping ("/delete")
+    public ResultResponse delete(@RequestParam List<Integer> ids,@RequestParam Integer bookID,@RequestParam boolean delFile){
+        Boolean isTrue = booksDetailsService.deleteDetails(ids, bookID,delFile);
+        if(!isTrue) new BizException("4000","删除书籍失败");
+        return ResultResponse.success();
+    }
+
+    @PostMapping("/edit")
+    public ResultResponse edit(@RequestBody BooksDetails booksDetails){
+        booksDetailsService.editDetails(booksDetails);
         return ResultResponse.success();
     }
 }

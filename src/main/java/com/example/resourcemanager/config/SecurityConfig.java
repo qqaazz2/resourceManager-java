@@ -46,19 +46,20 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)//关闭csrf
                 .sessionManagement(AbstractHttpConfigurer::disable)
-                .addFilterBefore(new JwtAuthenticationTokenFilter(tokenService,redisTemplate), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationTokenFilter(tokenService, redisTemplate), UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))//关闭
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/user/login").permitAll().requestMatchers("/user/code").permitAll().anyRequest().authenticated());
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/user/login").permitAll().requestMatchers("/user/code").permitAll().requestMatchers("/favicon.ico").permitAll().anyRequest().authenticated());
         return httpSecurity.build();
     }
 
+
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    DaoAuthenticationProvider daoAuthenticationProvider(){
+    DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         daoAuthenticationProvider.setUserDetailsService(new UserDetailsManager(userMapper));
@@ -67,7 +68,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(){
+    public AuthenticationManager authenticationManager() {
         List<AuthenticationProvider> list = new ArrayList<>();
         list.add(daoAuthenticationProvider());
         ProviderManager providerManager = new ProviderManager(list);

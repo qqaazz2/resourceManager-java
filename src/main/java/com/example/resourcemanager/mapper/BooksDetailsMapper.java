@@ -1,7 +1,7 @@
 package com.example.resourcemanager.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.resourcemanager.entity.BooksDetails;
+import com.example.resourcemanager.entity.books.BooksDetails;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

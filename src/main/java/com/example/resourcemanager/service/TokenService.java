@@ -7,9 +7,11 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -52,7 +54,6 @@ public class TokenService {
 
     @PostConstruct
     private void init(){
-        System.out.println(secret);
         KEY = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
@@ -113,7 +114,13 @@ public class TokenService {
      * @return
      */
     public String getRequestToken(HttpServletRequest request) {
-        String token = request.getHeader(header);
+        String token = "";
+        if(request.getHeader("Upgrade") != null && request.getHeader("Upgrade").equals("websocket")){
+            token = request.getParameter(header);
+        }else {
+            token = request.getHeader(header);
+        }
+
         if (token != null && !token.isEmpty() && token.startsWith(TOKEN_PREFIX)) {
             token = token.replace(TOKEN_PREFIX, "");
         }

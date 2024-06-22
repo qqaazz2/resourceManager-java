@@ -1,15 +1,16 @@
 package com.example.resourcemanager.service.impl;
 
-import com.baomidou.mybatisplus.core.batch.MybatisBatch;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.resourcemanager.common.BizException;
-import com.example.resourcemanager.entity.Books;
-import com.example.resourcemanager.entity.BooksDetails;
+import com.example.resourcemanager.entity.books.BooksDetails;
 import com.example.resourcemanager.mapper.BooksDetailsMapper;
 import com.example.resourcemanager.service.BooksDetailsService;
 import com.example.resourcemanager.service.BooksService;
+import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.epub.EpubReader;
@@ -22,7 +23,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,13 +34,25 @@ public class BooksDetailsServiceImpl extends ServiceImpl<BooksDetailsMapper, Boo
     @Value("${file.upload}")
     String filePath;
 
+    @Resource
+    BooksDetailsMapper booksDetailsMapper;
+
+    @Resource
+    BooksService booksService;
+
+    static int count;
 
     @Override
-    public List<BooksDetails> getDetailsList(Integer id) {
+    public Map<String, Object> getDetailsList(Integer id, Integer page, Integer size) {
         LambdaQueryWrapper<BooksDetails> queryWrapper = new QueryWrapper<BooksDetails>().lambda();
         queryWrapper.eq(!(id.equals(0)), BooksDetails::getBooks_id, id);
-        List<BooksDetails> list = this.list(queryWrapper);
-        return list;
+        queryWrapper.orderByAsc(BooksDetails::getSort);
+        List<BooksDetails> list = this.page(new Page(page, size), queryWrapper).getRecords();
+        long count = this.count(queryWrapper);
+        Map<String, Object> map = new HashMap<>();
+        map.put("data", list);
+        map.put("count", count);
+        return map;
     }
 
     AtomicBoolean atomicBoolean = new AtomicBoolean(false);
@@ -45,13 +60,14 @@ public class BooksDetailsServiceImpl extends ServiceImpl<BooksDetailsMapper, Boo
     @Override
     public Boolean addDetails(Integer booksID, List<File> list) {
         atomicBoolean.set(false);
+        count = Math.toIntExact(booksDetailsMapper.selectCount(new UpdateWrapper<BooksDetails>().eq("books_id", booksID)));
         ExecutorService executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(20));
         List<Callable<BooksDetails>> callableList = new ArrayList<>();
         List<BooksDetails> booksDetailsList = new ArrayList<>();
         int index = 0;
 
         for (File file : list) {
-            Callable<BooksDetails> callable = new Task(file, index++, booksID);
+            Callable<BooksDetails> callable = new Task(file, index += 1, booksID);
             callableList.add(callable);
         }
 
@@ -65,7 +81,6 @@ public class BooksDetailsServiceImpl extends ServiceImpl<BooksDetailsMapper, Boo
                         booksDetailsList.add(booksDetails);
                     }
                 } catch (Exception e) {
-                    System.out.println(111111111);
                     atomicBoolean.set(true);
                     executor.shutdownNow();
                     e.printStackTrace();
@@ -80,8 +95,51 @@ public class BooksDetailsServiceImpl extends ServiceImpl<BooksDetailsMapper, Boo
                 executor.shutdown();
             }
         }
+        boolean type = this.saveBatch(booksDetailsList);
+        System.out.println(count + "count");
+        if (count == 0) {
+            System.out.println(465);
+            BooksDetails booksDetails = booksDetailsList.get(0);
+            booksService.editBooksCover(booksDetails.getBooks_id(), booksDetails.getCover());
+        }
+        return type;
+    }
 
-        return this.saveBatch(booksDetailsList);
+    @Override
+    public Boolean deleteDetails(List<Integer> ids, Integer bookID, boolean type) {
+
+        File file;
+        File cover;
+        if (type) {
+            List<BooksDetails> list = this.listByIds(ids);
+            for (BooksDetails details : list) {
+                file = new File(filePath + File.separator + details.getUrl());
+                cover = new File(filePath + File.separator + details.getCover());
+                file.delete();
+                cover.delete();
+            }
+        }
+        boolean isDel = this.removeBatchByIds(ids);
+        return isDel;
+    }
+
+    @Override
+    public void editDetails(BooksDetails booksDetails) {
+        int status = booksDetails.getStatus();
+        if(status == 1){
+            booksDetails.setProgress((float) 0);
+        }else if(status == 2){
+            booksDetails.setProgress((float) 1);
+        }
+        boolean isTrue = this.updateById(booksDetails);
+        if(!isTrue) throw new BizException("4000", "书籍信息修改失败");
+    }
+
+    @Override
+    public BooksDetails getDetails(Integer id) {
+        LambdaQueryWrapper<BooksDetails> queryWrapper = new QueryWrapper<BooksDetails>().lambda();
+        queryWrapper.eq(BooksDetails::getId, id);
+        return this.getOne(queryWrapper);
     }
 
     // 处理epub文件的文件上传
@@ -98,7 +156,8 @@ public class BooksDetailsServiceImpl extends ServiceImpl<BooksDetailsMapper, Boo
             BooksDetails booksDetails = new BooksDetails();
             File folder = file.getParentFile();
 
-            File coverFile = new File(folder + File.separator + "cover" + File.separator + index + ".jpg");
+            String fileName = file.getName().substring(0, file.getName().lastIndexOf("."));
+            File coverFile = new File(folder + File.separator + "cover" + File.separator + fileName + ".jpg");
             if (!coverFile.exists()) coverFile.mkdirs();
             try (InputStream inputStream = new FileInputStream(file)) {
                 EpubReader epubReader = new EpubReader();
@@ -109,9 +168,10 @@ public class BooksDetailsServiceImpl extends ServiceImpl<BooksDetailsMapper, Boo
                 ImageIO.write(coverImage, "jpg", coverFile);
 
                 booksDetails.setBooks_id(booksID);
-                booksDetails.setCover("books/" + folder.getName() + "/cover/" + index + ".jpg");
-                booksDetails.setName(file.getName().substring(0, file.getName().lastIndexOf(".")));
-                booksDetails.setSort(index);
+                booksDetails.setCover("books/" + folder.getName() + "/cover/" + fileName + ".jpg");
+                booksDetails.setUrl("books/" + folder.getName() + File.separator + file.getName());
+                booksDetails.setName(fileName);
+                booksDetails.setSort(count + index);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new Exception("获取epub文件封面错误");
