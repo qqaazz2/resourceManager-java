@@ -7,9 +7,9 @@ import lombok.Data;
 
 @Data
 public class ComicSet extends BaseEntity {
-    private String name;
     private String cover;
     private String note;
     private String press;
     private String language;
+    private Integer filesId;
 }

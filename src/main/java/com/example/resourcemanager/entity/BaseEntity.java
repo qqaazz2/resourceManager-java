@@ -1,18 +1,20 @@
 package com.example.resourcemanager.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
 
 import java.util.Date;
 
+@Data
 public class BaseEntity {
     @TableId(type = IdType.AUTO)
-    private Integer id;
+    protected Integer id;
 
     @TableField(fill = FieldFill.INSERT)
-    private Date add_time;
-    private Date edit_time;
+    protected Date add_time;
+    protected Date edit_time;
 
     @TableLogic
-    private Integer deleted;
-    private Integer status;
+    protected Integer deleted;
+    protected Integer status;
 }
