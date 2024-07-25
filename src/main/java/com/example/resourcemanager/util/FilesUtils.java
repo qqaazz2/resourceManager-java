@@ -157,4 +157,8 @@ public class FilesUtils {
         if(file.getName().equals(metaName)) return true;
         return false;
     }
+
+    public static Float getImgMp(int width,int height){
+        return (float) (width * height) /  1000000;
+    }
 }
