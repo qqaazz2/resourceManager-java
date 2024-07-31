@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.resourcemanager.mapper.picture.PictureMapper">
+
+    <resultMap id="pictureDetail" type="com.example.resourcemanager.dto.picture.PictureDetailDTO">
+        <id column="id" property="id"/>
+        <result column="file_name" property="fileName"/>
+        <result column="modifiable_name" property="modifiableName"/>
+        <result column="file_path" property="filePath"/>
+        <result column="picture_id" property="pictureId"/>
+        <result column="love" property="love"/>
+        <result column="display" property="display"/>
+        <result column="author" property="author"/>
+        <result column="width" property="width"/>
+        <result column="height" property="height"/>
+        <result column="mp" property="mp"/>
+        <result column="file_size" property="fileSize"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="getList" resultMap="pictureDetail"
+            parameterType="com.example.resourcemanager.dto.picture.PictureDetailDTO">
+        SELECT
+        files.id,
+        file_name,
+        modifiable_name,
+        file_path,
+        picture.id as picture_id,
+        love,
+        `display`,
+        author,
+        width,
+        height,
+        mp,
+        file_size,
+        cover,
+        create_time
+        FROM
+        files
+        LEFT JOIN picture ON files.id = picture.files_id
+        WHERE
+        type = 3 AND deleted = 1
+        <if test="picture_id != null and picture_id != ''">
+            and parent_id = #{picture_id}
+        </if>
+        <if test="love != null and love != ''">
+            and love = #{love}
+        </if>
+        <if test="display != null and display != ''">
+            and display = #{display}
+        </if>
+        <if test="author != null and author != ''">
+            and author = #{author}
+        </if>
+        ORDER BY files.id
+        LIMIT #{offset},#{limit}
+    </select>
+    <select id="count" resultType="int" parameterType="com.example.resourcemanager.dto.picture.PictureQueryCondition">
+        SELECT count(*) FROM files
+        LEFT JOIN picture ON files.id = picture.files_id
+        WHERE type = 3 AND deleted = 1
+        <if test="picture_id != null and picture_id != ''">
+            and parent_id = #{picture_id}
+        </if>
+        <if test="love != null and love != ''">
+            and love = #{love}
+        </if>
+        <if test="display != null and display != ''">
+            and display = #{display}
+        </if>
+        <if test="author != null and author != ''">
+            and author = #{author}
+        </if>
+    </select>
+
+    <select id="getRandList" resultMap="pictureDetail" parameterType="int">
+        SELECT
+        files.id,
+        file_name,
+        modifiable_name,
+        file_path,
+        picture.id as picture_id,
+        love,
+        `display`,
+        author,
+        width,
+        height,
+        mp,
+        file_size,
+        cover,
+        create_time
+        FROM
+        files
+        INNER JOIN picture ON files.id = picture.files_id
+        WHERE
+        type = 3 AND deleted = 1 AND `display` = 1 AND files.id >= ( SELECT floor( RAND() * ( SELECT MAX( id ) FROM
+        files ) ) ) AND is_folder = 2
+        ORDER BY files.id
+        LIMIT #{limit}
+    </select>
+</mapper>

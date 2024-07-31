@@ -11,7 +11,7 @@ import java.util.List;
 
 @Mapper
 public interface PictureMapper extends BaseMapper<Picture> {
-    List<PictureItemDTO> getList(QueryCondition queryCondition);
+    List<PictureDetailDTO> getList(QueryCondition queryCondition);
 
     int count(QueryCondition queryCondition);
 
