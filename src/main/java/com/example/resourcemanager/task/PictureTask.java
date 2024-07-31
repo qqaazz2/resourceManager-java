@@ -1,39 +1,50 @@
 package com.example.resourcemanager.task;
 
 import com.example.resourcemanager.entity.Files;
-import com.example.resourcemanager.service.comic.ComicService;
+import com.example.resourcemanager.service.FilesService;
 import com.example.resourcemanager.service.picture.PictureService;
+import com.example.resourcemanager.util.FilesUtils;
 import jakarta.annotation.Resource;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
+@Async
+@Component
 public class PictureTask extends AsyncTask {
     @Resource
     PictureService pictureService;
 
     @Resource
-    ComicService comicService;
-
-    static Map<String, File> covers = new HashMap<>();
-    Map<String, Integer> folders = new HashMap<>();
+    FilesService filesService;
 
     public PictureTask() {
         basePath = "picture";
+        contentType = 3;
     }
 
     @Override
     public void create() {
-        List<Files> files = createFiles.stream().filter(value -> value.getIsFolder() == 1).toList();
+        List<Files> filesList = createFiles.stream().filter(value -> value.getIsFolder() == 1).map(value -> {
+            File[] files = value.getFile().listFiles();
+            if (files == null) {
+                return value;
+            }
 
-        files = pictureService.createData(files);
-        folders.putAll(files.stream().collect(Collectors.toMap(Files::getFilePath, Files::getId)));
-        createFiles.stream().filter(value -> value.getIsFolder() == 2).forEach(value -> value.setParentId(folders.get(value.getFile().getParent())));
-        createFiles.removeIf(value -> value.getIsFolder() == 1);
+            for (File file : files) {
+                String path = file.getPath();
+                if (FilesUtils.isImageFile(path)) {
+                    value.setCover(path);
+                    break;
+                }
+            }
+            return value;
+        }).collect(Collectors.toList());
+        filesList = filesService.createFiles(filesList);
+        getChildren(filesList);
         pictureService.createData(createFiles);
     }
 }

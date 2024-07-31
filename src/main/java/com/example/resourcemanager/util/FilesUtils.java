@@ -59,13 +59,19 @@ public class FilesUtils {
 
     public Files createFiles(File file, Integer type, Integer parentId) {
         Files files = new Files();
-        files.setFileName(file.getName());
-        files.setFilePath(file.getPath());
-        files.setType(type);
-        files.setFileType(file.getName().toLowerCase());
-        files.setFile(file);
-        files.setModifiableName(file.getName());
-        if (parentId == -1) files.setParentId(parentId);
+        try {
+            files.setFileName(file.getName());
+            files.setFilePath(file.getPath());
+            files.setType(type);
+            files.setFileType(java.nio.file.Files.probeContentType(Path.of(file.getPath())));
+            files.setFile(file);
+            files.setHash(this.getFileChecksum(file));
+            files.setModifiableName(file.getName());
+            if (parentId == -1) files.setParentId(parentId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new BizException("获取文件类型失败");
+        }
         return files;
     }
 
@@ -153,12 +159,25 @@ public class FilesUtils {
         return false;
     }
 
-    public boolean isMetaFile(File file){
-        if(file.getName().equals(metaName)) return true;
+    public boolean isMetaFile(File file) {
+        if (file.getName().equals(metaName)) return true;
         return false;
     }
 
-    public static Float getImgMp(int width,int height){
-        return (float) (width * height) /  1000000;
+    public static Float getImgMp(int width, int height) {
+        return (float) (width * height) / 1000000;
+    }
+
+    public void editMetaData(File file){
+        Path paths = Paths.get(file.getPath() + File.separator + metaName);
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            MetaData metaData = new MetaData();
+            metaData.setName(file.getName());
+            objectMapper.writeValue(paths.toFile(), metaData);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new BizException("4000", "编辑元数据文件失败");
+        }
     }
 }

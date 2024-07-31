@@ -1,6 +1,7 @@
 package com.example.resourcemanager.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.example.resourcemanager.entity.picture.Picture;
 import lombok.Data;
 
 import java.io.File;
@@ -12,16 +13,15 @@ public class Files extends BaseEntity {
     private String filePath;
     private String fileType;
     private String fileNote;
-    private int isFolder;
+    private int isFolder = 2;
     private int type;
     private Integer parentId;
     private String modifiableName;
     private String hash;
+    private String cover;
 
     @TableField(exist = false)
     private File file;
-    @TableField(exist = false)
-    private String cover;
     @TableField(exist = false)
     private Object other;
 
