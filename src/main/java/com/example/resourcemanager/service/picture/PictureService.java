@@ -15,6 +15,8 @@ public interface PictureService {
 
     PageVO<PictureDetailDTO> getFolderList(PictureQueryCondition queryCondition);
 
+    PageVO<PictureDetailDTO> getTimeLineList(PictureQueryCondition queryCondition);
+
     List<PictureDetailDTO> getRandList(Integer limit);
 
     void setDisplay(Integer id,Integer display);

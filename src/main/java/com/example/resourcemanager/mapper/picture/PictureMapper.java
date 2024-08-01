@@ -15,5 +15,9 @@ public interface PictureMapper extends BaseMapper<Picture> {
 
     int count(QueryCondition queryCondition);
 
+    List<PictureDetailDTO> getTimeLineList(QueryCondition queryCondition);
+
+    int countTimeLineList(QueryCondition queryCondition);
+
     List<PictureDetailDTO> getRandList(Integer limit);
 }

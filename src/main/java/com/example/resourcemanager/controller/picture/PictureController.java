@@ -29,6 +29,11 @@ public class PictureController {
         return ResultResponse.success(pictureService.getFolderList(queryCondition));
     }
 
+    @GetMapping("getTimeLineList")
+    public ResultResponse getTimeLineList(PictureQueryCondition queryCondition) {
+        return ResultResponse.success(pictureService.getTimeLineList(queryCondition));
+    }
+
     @GetMapping("getRandList")
     public ResultResponse getRandList(Integer limit) {
         return ResultResponse.success(pictureService.getRandList(limit));

@@ -67,6 +67,13 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     }
 
     @Override
+    public PageVO<PictureDetailDTO> getTimeLineList(PictureQueryCondition queryCondition) {
+        List<PictureDetailDTO> list = pictureMapper.getTimeLineList(queryCondition);
+        Integer count = pictureMapper.countTimeLineList(queryCondition);
+        return new PageVO(queryCondition.getLimit(), queryCondition.getPage(), count, list);
+    }
+
+    @Override
     public List<PictureDetailDTO> getRandList(Integer limit) {
         return pictureMapper.getRandList(limit);
     }

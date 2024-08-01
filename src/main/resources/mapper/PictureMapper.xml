@@ -100,4 +100,51 @@
         ORDER BY files.id
         LIMIT #{limit}
     </select>
+
+    <select id="getTimeLineList" resultMap="pictureDetail"
+            parameterType="com.example.resourcemanager.dto.picture.PictureDetailDTO">
+        SELECT
+        files.id,
+        file_name,
+        modifiable_name,
+        file_path,
+        picture.id AS picture_id,
+        love,
+        `display`,
+        author,
+        width,
+        height,
+        mp,
+        file_size,
+        cover,
+        create_time
+        FROM
+        files
+        INNER JOIN picture ON files.id = picture.files_id
+        WHERE
+        type = 3
+        AND deleted = 1
+        AND is_folder = 2
+        <if test="love != null and love != ''">
+            and love = #{love}
+        </if>
+        <if test="display != null and display != ''">
+            and display = #{display}
+        </if>
+        ORDER BY
+        picture.create_time
+        LIMIT #{offset},#{limit}
+    </select>
+
+    <select id="countTimeLineList" resultType="int" parameterType="com.example.resourcemanager.dto.picture.PictureQueryCondition">
+        SELECT count(*) FROM files
+        LEFT JOIN picture ON files.id = picture.files_id
+        WHERE type = 3 AND deleted = 1 AND is_folder = 2
+        <if test="love != null and love != ''">
+            and love = #{love}
+        </if>
+        <if test="display != null and display != ''">
+            and display = #{display}
+        </if>
+    </select>
 </mapper>
