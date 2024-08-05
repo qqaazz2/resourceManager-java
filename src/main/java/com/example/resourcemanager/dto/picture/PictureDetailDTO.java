@@ -20,4 +20,5 @@ public class PictureDetailDTO {
     private Float mp;
     private Integer fileSize;
     private Date createTime;
+    private Integer isFolder;
 }

@@ -28,6 +28,7 @@ public class PictureTask extends AsyncTask {
 
     @Override
     public void create() {
+        System.out.println(createFiles);
         List<Files> filesList = createFiles.stream().filter(value -> value.getIsFolder() == 1).map(value -> {
             File[] files = value.getFile().listFiles();
             if (files == null) {
@@ -43,8 +44,10 @@ public class PictureTask extends AsyncTask {
             }
             return value;
         }).collect(Collectors.toList());
-        filesList = filesService.createFiles(filesList);
-        getChildren(filesList);
+        if(!filesList.isEmpty()){
+            filesList = filesService.createFiles(filesList);
+            getChildren(filesList);
+        }
         pictureService.createData(createFiles);
     }
 }

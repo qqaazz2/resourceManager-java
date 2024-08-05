@@ -15,6 +15,7 @@
         <result column="author" property="author"/>
         <result column="width" property="width"/>
         <result column="height" property="height"/>
+        <result column="is_folder" property="isFolder"/>
         <result column="mp" property="mp"/>
         <result column="file_size" property="fileSize"/>
         <result column="create_time" property="createTime"/>
@@ -36,6 +37,7 @@
         mp,
         file_size,
         cover,
+        is_folder,
         create_time
         FROM
         files
@@ -90,6 +92,7 @@
         mp,
         file_size,
         cover,
+        is_folder,
         create_time
         FROM
         files
@@ -116,6 +119,7 @@
         height,
         mp,
         file_size,
+        is_folder,
         cover,
         create_time
         FROM
