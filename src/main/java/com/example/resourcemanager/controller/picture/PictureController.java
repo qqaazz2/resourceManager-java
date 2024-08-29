@@ -2,12 +2,17 @@ package com.example.resourcemanager.controller.picture;
 
 import com.example.resourcemanager.common.ResultResponse;
 import com.example.resourcemanager.dto.QueryCondition;
+import com.example.resourcemanager.dto.picture.PictureDetailDTO;
 import com.example.resourcemanager.dto.picture.PictureQueryCondition;
 import com.example.resourcemanager.mapper.picture.PictureMapper;
 import com.example.resourcemanager.service.picture.PictureService;
 import com.example.resourcemanager.task.PictureTask;
 import jakarta.annotation.Resource;
+import org.apache.ibatis.annotations.Update;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/picture")
@@ -40,14 +45,20 @@ public class PictureController {
     }
 
     @PostMapping("setDisplay")
-    public ResultResponse setDisplay(@RequestParam Integer id, @RequestParam(required = false, defaultValue = "2") Integer display) {
-        pictureService.setDisplay(id, display);
+    public ResultResponse setDisplay(@RequestBody Map<String,Integer> body) {
+        pictureService.setDisplay(body.get("id"), body.get("display"));
         return ResultResponse.success();
     }
 
     @PostMapping("setLove")
-    public ResultResponse setLove(@RequestParam Integer id, @RequestParam Integer love) {
-        pictureService.setLove(id, love);
+    public ResultResponse setLove(@RequestBody Map<String,Integer> body) {
+        pictureService.setLove(body.get("id"), body.get("love"));
+        return ResultResponse.success();
+    }
+
+    @PostMapping("editData")
+    public ResultResponse editData(@Validated(Update.class) @RequestBody PictureQueryCondition pictureQueryCondition) {
+        pictureService.editData(pictureQueryCondition);
         return ResultResponse.success();
     }
 }

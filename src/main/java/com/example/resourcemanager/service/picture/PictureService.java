@@ -22,4 +22,6 @@ public interface PictureService {
     void setDisplay(Integer id,Integer display);
 
     void setLove(Integer id,Integer love);
+
+    void editData(PictureQueryCondition queryCondition);
 }

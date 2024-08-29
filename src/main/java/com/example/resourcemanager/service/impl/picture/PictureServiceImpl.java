@@ -79,16 +79,24 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     }
 
     @Override
-    public void setDisplay(Integer id,Integer display) {
+    public void setDisplay(Integer id, Integer display) {
         LambdaUpdateWrapper<Picture> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(Picture::getId,id).set(Picture::getDisplay,display);
-        ValidationUtils.checkCondition(this.update(updateWrapper),"保存查看状态失败");
+        updateWrapper.eq(Picture::getFilesId, id).set(Picture::getDisplay, display);
+        ValidationUtils.checkCondition(this.update(updateWrapper), "保存查看状态失败");
     }
 
     @Override
     public void setLove(Integer id, Integer love) {
         LambdaUpdateWrapper<Picture> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(Picture::getId,id).set(Picture::getLove,love);
-        ValidationUtils.checkCondition(this.update(updateWrapper),"收藏失败");
+        updateWrapper.eq(Picture::getFilesId, id).set(Picture::getLove, love);
+        ValidationUtils.checkCondition(this.update(updateWrapper), "收藏失败");
+    }
+
+    @Override
+    public void editData(PictureQueryCondition queryCondition) {
+        filesService.rename(queryCondition.getId(), queryCondition.getName());
+        LambdaUpdateWrapper<Picture> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Picture::getFilesId, queryCondition.getId()).set(Picture::getAuthor, queryCondition.getAuthor());
+        ValidationUtils.checkCondition(this.update(updateWrapper), "作者修改失败");
     }
 }

@@ -15,4 +15,6 @@ public interface FilesService {
     List<Files> createFiles(List<Files> files);
 
     void removerFiles(List<Files> files);
+
+    void rename(Integer id,String name);
 }
