@@ -4,12 +4,15 @@ import com.example.resourcemanager.enums.ExceptionEnum;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.naming.AuthenticationException;
+import java.util.List;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -55,4 +58,15 @@ public class GlobalExceptionHandler {
     public ResultResponse exceptionHandler(HttpServletRequest req, InternalAuthenticationServiceException e){
         return ResultResponse.error("4000",e.getMessage());
     }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResultResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        List<ObjectError> allErrors = e.getBindingResult().getAllErrors();
+        StringBuilder errorMsg = new StringBuilder();
+        for (ObjectError error : allErrors) {
+            errorMsg.append(error.getDefaultMessage()).append("; ");
+        }
+        return ResultResponse.error("4000",errorMsg.toString());
+    }
+
 }

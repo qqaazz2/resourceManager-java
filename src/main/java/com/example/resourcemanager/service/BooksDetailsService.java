@@ -17,5 +17,7 @@ public interface BooksDetailsService {
 
     void editDetails(BooksDetails booksDetails);
 
+    void changeProgress(Integer id,Float progress);
+
     BooksDetails getDetails(Integer id);
 }

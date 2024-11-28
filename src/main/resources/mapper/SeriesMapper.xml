@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.resourcemanager.mapper.book.SeriesMapper">
+
+    <resultMap id="seriesList" type="com.example.resourcemanager.dto.book.SeriesListDTO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="author" property="author"/>
+        <result column="over_status" property="overStatus"/>
+        <result column="status" property="status"/>
+        <result column="love" property="love"/>
+        <result column="profile" property="profile"/>
+        <result column="last_read_time" property="lastReadTime"/>
+        <result column="num" property="num"/>
+        <result column="file_path" property="filePath"/>
+        <result column="files_id" property="filesId"/>
+    </resultMap>
+
+    <select id="getList" resultMap="seriesList" parameterType="com.example.resourcemanager.dto.book.SeriesListQueryCondition">
+        SELECT
+            series.id,
+            series.`name`,
+            series.author,
+            series.over_status,
+            series.`status`,
+            series.love,
+            series.`profile`,
+            series.last_read_time,
+            series.num,
+            file_path,
+            files_id
+        FROM
+            series
+        LEFT JOIN files ON series.cover_id = files.id
+        WHERE series.deleted = 1
+        <if test="love != null and love != ''">
+            and love = #{love}
+        </if>
+        <if test="status != null and status != ''">
+            and status = #{status}
+        </if>
+        <if test="overStatus != null and overStatus != ''">
+            and over_status = #{overStatus}
+        </if>
+        LIMIT #{offset},#{limit}
+    </select>
+    <select id="count" resultType="int" parameterType="com.example.resourcemanager.dto.book.SeriesListQueryCondition">
+        SELECT count(*) FROM series
+        LEFT JOIN files ON series.cover_id = files.id
+        WHERE series.deleted = 1
+        <if test="love != null and love != ''">
+            and love = #{love}
+        </if>
+        <if test="status != null and status != ''">
+            and status = #{status}
+        </if>
+        <if test="overStatus != null and overStatus != ''">
+            and over_status = #{overStatus}
+        </if>
+    </select>
+
+    <select id="getOne" resultMap="seriesList" parameterType="int">
+        SELECT
+        series.id,
+        series.`name`,
+        series.author,
+        series.over_status,
+        series.`status`,
+        series.love,
+        series.`profile`,
+        series.last_read_time,
+        series.num,
+        file_path,
+        files_id
+        FROM
+        series
+        LEFT JOIN files ON series.cover_id = files.id
+        WHERE series.deleted = 1
+        AND series.id = #{id}
+    </select>
+</mapper>

@@ -24,9 +24,6 @@ import java.util.zip.ZipInputStream;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class ComicSetServiceImpl extends ServiceImpl<ComicSetMapper, ComicSet> implements ComicSetService {
-    @Value("${file.upload}")
-    String filePath;
-
     @Resource
     FilesService filesService;
 
@@ -35,7 +32,6 @@ public class ComicSetServiceImpl extends ServiceImpl<ComicSetMapper, ComicSet> i
         files = filesService.createFiles(files);
         List<ComicSet> comicSetList = files.stream().map(item -> {
             ComicSet comicSet = new ComicSet();
-            comicSet.setCover(item.getCover());
             comicSet.setFilesId(item.getId());
             return comicSet;
         }).collect(Collectors.toList());

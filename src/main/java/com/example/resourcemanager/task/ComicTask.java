@@ -37,6 +37,7 @@ public class ComicTask extends AsyncTask {
 
     public ComicTask() {
         basePath = "comic";
+        contentType = 2;
     }
 
     @Override
@@ -64,9 +65,7 @@ public class ComicTask extends AsyncTask {
             while (executor.isTerminated()) {
                 if(!covers.isEmpty())files.stream().forEach(value -> value.setCover(covers.get(value.getCover()).getPath()));
                 files = comicSetService.createSave(files);
-                folders.putAll(files.stream().collect(Collectors.toMap(Files::getFilePath,Files::getId)));
-                createFiles.stream().filter(value -> value.getIsFolder() == 2).forEach(value -> value.setParentId(folders.get(value.getFile().getParent())));
-                createFiles.removeIf(value -> value.getIsFolder() == 1);
+                getChildren(files);
                 comicService.createSave(createFiles);
             }
         } catch (Exception e) {

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.resourcemanager.mapper.book.BookMapper">
+    <resultMap id="bookList" type="com.example.resourcemanager.dto.book.BookListDTO">
+        <id column="id" property="id"/>
+        <result column="file_path" property="filePath"/>
+        <result column="is_folder" property="isFolder"/>
+        <result column="name" property="name"/>
+        <result column="author" property="author"/>
+        <result column="profile" property="profile"/>
+        <result column="progress" property="progress"/>
+        <result column="status" property="status"/>
+        <result column="publishing" property="publishing"/>
+        <result column="cover_path" property="coverPath"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="read_tag_num" property="readTagNum"/>
+    </resultMap>
+
+    <resultMap id="bookCover" type="com.example.resourcemanager.dto.book.BookCoverDTO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="cover_id" property="coverId"/>
+        <result column="cover_path" property="coverPath"/>
+    </resultMap>
+
+    <select id="getList" resultMap="bookList" parameterType="com.example.resourcemanager.dto.book.BookListQueryCondition">
+        SELECT
+        files.id,
+        files.file_path,
+        files.is_folder,
+        `name`,
+        author,
+        `profile`,
+        progress,
+        book.`status`,
+        read_tag_num,
+        publishing,
+        cover.file_path AS cover_path,
+        book.cover_id,
+        files.parent_id
+        FROM
+        files
+        LEFT JOIN book ON files.id = book.files_id
+        LEFT JOIN files AS cover ON book.cover_id = cover.id
+        WHERE files.deleted = 1 AND files.type = 1
+        <if test="id != null and id != ''">
+            and files.parent_id = #{id}
+        </if>
+        <if test="status != null and status != ''">
+            and book.status = #{status}
+        </if>
+        <if test="folder != null and folder != ''">
+            and files.is_folder = #{folder}
+        </if>
+        ORDER BY `name`
+        LIMIT #{offset},#{limit}
+    </select>
+    <select id="count" resultType="int" parameterType="com.example.resourcemanager.dto.book.BookListQueryCondition">
+        SELECT count(*) FROM files
+        LEFT JOIN book ON files.id = book.files_id
+        LEFT JOIN files AS cover ON book.cover_id = cover.id
+        WHERE files.deleted = 1 AND files.type = 1
+        <if test="id != null and id != ''">
+            and files.parent_id = #{id}
+        </if>
+        <if test="status != null and status != ''">
+            and book.status = #{status}
+        </if>
+        <if test="folder != null and folder != ''">
+            and files.is_folder = #{folder}
+        </if>
+    </select>
+
+    <select id="getListByParentId" resultMap="bookList" parameterType="java.lang.Integer">
+        SELECT
+            files.id,
+            book.`status`,
+            files.parent_id
+        FROM
+            files
+        LEFT JOIN book ON files.id = book.files_id
+        WHERE files.deleted = 1 AND files.type = 1 AND files.parent_id = #{id}
+    </select>
+
+    <select id="getCoverList" resultMap="bookCover" parameterType="java.lang.Integer">
+        SELECT
+            book.id,
+            name,
+            cover.id as cover_id,
+            cover.file_path as cover_path
+        FROM
+            files
+        LEFT JOIN book ON files.id = book.files_id
+        LEFT JOIN files AS cover ON book.cover_id = cover.id
+        WHERE files.deleted = 1 AND cover.type = 0 AND files.parent_id = #{id}
+    </select>
+</mapper>

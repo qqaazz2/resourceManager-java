@@ -24,7 +24,7 @@ public class FileTypeUtils {
 
     public static void getFileTypeBySuffix(String fileName, String[] formats) {
         suffix = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
-        if(!(Arrays.stream(formats).anyMatch(suffix::contains))) throw new BizException("4005", "文件上传格式不支持");
+        if(!(Arrays.stream(formats).anyMatch(suffix::contains))) throw new BizException("4005", "文件格式不支持");
     }
 
     public static void getFileTypeByMagicNumber(InputStream inputStream) {

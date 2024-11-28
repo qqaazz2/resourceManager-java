@@ -1,5 +1,6 @@
 package com.example.resourcemanager.config;
 
+import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,12 @@ import java.io.File;
 public class FilePathConfig implements WebMvcConfigurer {
     @Value("${file.upload}")
     String url;
+
+    @PostConstruct
+    public void init() {
+        File directory = new File(url);
+        if (!directory.exists()) directory.mkdirs();
+    }
 
     @SneakyThrows
     @Override

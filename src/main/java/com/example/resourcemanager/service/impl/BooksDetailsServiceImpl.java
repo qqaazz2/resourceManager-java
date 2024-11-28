@@ -2,6 +2,7 @@ package com.example.resourcemanager.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -96,7 +97,6 @@ public class BooksDetailsServiceImpl extends ServiceImpl<BooksDetailsMapper, Boo
             }
         }
         boolean type = this.saveBatch(booksDetailsList);
-        System.out.println(count + "count");
         if (count == 0) {
             System.out.println(465);
             BooksDetails booksDetails = booksDetailsList.get(0);
@@ -133,6 +133,14 @@ public class BooksDetailsServiceImpl extends ServiceImpl<BooksDetailsMapper, Boo
         }
         boolean isTrue = this.updateById(booksDetails);
         if(!isTrue) throw new BizException("4000", "书籍信息修改失败");
+    }
+
+    @Override
+    public void changeProgress(Integer id, Float progress) {
+        LambdaUpdateWrapper<BooksDetails> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(BooksDetails::getId,id).set(BooksDetails::getProgress,progress);
+        boolean isTrue = this.update(lambdaUpdateWrapper);
+        if(!isTrue) throw new BizException("4000", "阅读记录保存失败");
     }
 
     @Override

@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional(rollbackFor = Exception.class)
+@Transactional
 public class FilesServiceImpl extends ServiceImpl<FilesMapper, Files> implements FilesService {
 
     @Override
@@ -34,7 +34,6 @@ public class FilesServiceImpl extends ServiceImpl<FilesMapper, Files> implements
     @Override
     public List<Files> createFiles(List<Files> files) {
         boolean isTrue = this.saveBatch(files);
-        System.out.println(isTrue);
         if (!isTrue) throw new BizException("4000", "创建文件数据失败");
         return files;
     }
@@ -48,6 +47,23 @@ public class FilesServiceImpl extends ServiceImpl<FilesMapper, Files> implements
     public void rename(Integer id, String name) {
         LambdaUpdateWrapper<Files> updateWrapper = new LambdaUpdateWrapper<Files>();
         updateWrapper.eq(Files::getId, id).set(Files::getModifiableName, name);
-        ValidationUtils.checkCondition(this.update(updateWrapper),"文件重命名失败");
+        ValidationUtils.checkCondition(this.update(updateWrapper), "文件重命名失败");
+    }
+
+    @Override
+    public Files getFiles(Files files) {
+        LambdaQueryWrapper<Files> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(files.getType() != null, Files::getType, files.getType());
+        lambdaQueryWrapper.eq(files.getIsFolder() != null, Files::getIsFolder, files.getIsFolder());
+        lambdaQueryWrapper.eq(files.getParentId() != null, Files::getParentId, files.getParentId());
+        lambdaQueryWrapper.eq(!files.getFileName().isEmpty(), Files::getFileName, files.getFileName());
+        return this.getOne(lambdaQueryWrapper);
+    }
+
+    @Override
+    public Files createFile(Files files) {
+        boolean isTrue = this.save(files);
+        if (!isTrue) throw new BizException("4000", "创建文件数据失败");
+        return files;
     }
 }

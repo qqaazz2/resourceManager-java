@@ -67,7 +67,7 @@ public class FilesUtils {
             files.setFile(file);
             files.setHash(this.getFileChecksum(file));
             files.setModifiableName(file.getName());
-            if (parentId == -1) files.setParentId(parentId);
+            files.setParentId(parentId);
         } catch (IOException e) {
             e.printStackTrace();
             throw new BizException("获取文件类型失败");
@@ -75,7 +75,7 @@ public class FilesUtils {
         return files;
     }
 
-    public Files createFolder(File file, Integer parentId, Integer type) {
+    public Files createFolder(File file, Integer parentId, Integer type,Integer size) {
         Files files = new Files();
         files.setFileName(file.getName());
         files.setFilePath(file.getPath());
@@ -83,8 +83,9 @@ public class FilesUtils {
         files.setFile(file);
         files.setIsFolder(1);
         files.setType(type);
+        files.setFileSize(size);
         files.setModifiableName(file.getName());
-        if (parentId == -1) files.setParentId(parentId);
+        if (parentId != -1) files.setParentId(parentId);
         return files;
     }
 

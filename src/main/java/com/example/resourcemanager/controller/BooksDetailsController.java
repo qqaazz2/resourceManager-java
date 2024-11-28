@@ -49,4 +49,10 @@ public class BooksDetailsController {
         booksDetailsService.editDetails(booksDetails);
         return ResultResponse.success();
     }
+
+    @GetMapping("/changeProgress")
+    public ResultResponse changeProgress(@RequestParam Integer id,@RequestParam Float progress){
+        booksDetailsService.changeProgress(id,progress);
+        return ResultResponse.success();
+    }
 }
