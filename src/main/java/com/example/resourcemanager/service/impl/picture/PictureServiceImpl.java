@@ -15,6 +15,8 @@ import com.example.resourcemanager.service.FilesService;
 import com.example.resourcemanager.service.picture.PictureService;
 import com.example.resourcemanager.util.FilesUtils;
 import com.example.resourcemanager.util.ValidationUtils;
+import io.micrometer.common.util.StringUtils;
+import io.netty.util.internal.StringUtil;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +38,6 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
     @Override
     public List<Files> createData(List<Files> files) {
-        files = filesService.createFiles(files);
         List<Picture> pictureList = files.stream().map(item -> {
             Picture picture = new Picture();
             try {
@@ -95,6 +96,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     @Override
     public void editData(PictureQueryCondition queryCondition) {
         filesService.rename(queryCondition.getId(), queryCondition.getName());
+        if(StringUtils.isBlank((String) queryCondition.getAuthor())) return;
         LambdaUpdateWrapper<Picture> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Picture::getFilesId, queryCondition.getId()).set(Picture::getAuthor, queryCondition.getAuthor());
         ValidationUtils.checkCondition(this.update(updateWrapper), "作者修改失败");

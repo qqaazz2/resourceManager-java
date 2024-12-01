@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class QueryCondition {
     private Integer page;
-    private Integer limit = 50;
+    private Integer limit;
     private Integer offset;
 
     public QueryCondition(Integer page) {

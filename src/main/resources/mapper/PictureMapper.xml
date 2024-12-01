@@ -78,29 +78,14 @@
     </select>
 
     <select id="getRandList" resultMap="pictureDetail" parameterType="int">
-        SELECT
-        files.id,
-        file_name,
-        modifiable_name,
-        file_path,
-        picture.id as picture_id,
-        love,
-        `display`,
-        author,
-        width,
-        height,
-        mp,
-        file_size,
-        cover,
-        is_folder,
-        create_time
-        FROM
-        files
+        SELECT files.id, file_name, modifiable_name, file_path, picture.id as picture_id, love, `display`, author, width, height, mp, file_size, cover, is_folder, create_time
+        FROM files
         INNER JOIN picture ON files.id = picture.files_id
-        WHERE
-        type = 3 AND deleted = 1 AND `display` = 1 AND files.id >= ( SELECT floor( RAND() * ( SELECT MAX( id ) FROM
-        files ) ) ) AND is_folder = 2
-        ORDER BY files.id
+        WHERE type = 3
+        AND deleted = 1
+        AND `display` = 1
+        AND is_folder = 2
+        ORDER BY RAND()
         LIMIT #{limit}
     </select>
 
@@ -136,7 +121,7 @@
             and display = #{display}
         </if>
         ORDER BY
-        picture.create_time
+        picture.create_time DESC
         LIMIT #{offset},#{limit}
     </select>
 

@@ -136,10 +136,6 @@ public class BookTask extends AsyncTask {
             }
 
             if (files.getChild() == null) continue;
-            System.out.println(files.getId());
-            System.out.println(files.getIsFolder());
-            System.out.println(files.getFileName());
-            System.out.println(folderMap);
             List<Files> childes = files.getChild().stream().peek(value -> value.setParentId(files.getId())).toList();
             deepCreate(childes, index += 1);
         }

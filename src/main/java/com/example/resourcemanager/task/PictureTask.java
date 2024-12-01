@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +22,7 @@ public class PictureTask extends AsyncTask {
     @Resource
     FilesService filesService;
 
+    List<Files> pictureList = new ArrayList();
     public PictureTask() {
         basePath = "picture";
         contentType = 3;
@@ -28,25 +30,19 @@ public class PictureTask extends AsyncTask {
 
     @Override
     public void create() {
-        List<Files> filesList = createFiles.stream().filter(value -> value.getIsFolder() == 1).map(value -> {
-            File[] files = value.getFile().listFiles();
-            if (files == null) {
-                return value;
-            }
+        pictureList.clear();
 
-            for (File file : files) {
-                String path = file.getPath();
-                if (FilesUtils.isImageFile(path)) {
-                    value.setCover(path);
-                    break;
-                }
-            }
-            return value;
-        }).collect(Collectors.toList());
-        if(!filesList.isEmpty()){
-            filesList = filesService.createFiles(filesList);
-            getChildren(filesList);
+        deepCreate(createFiles,1);
+        pictureService.createData(pictureList);
+    }
+
+    public void deepCreate(List<Files> list, Integer index) {
+        list = filesService.createFiles(list);
+        for (Files files : list) {
+            if(files.getIsFolder() == 2) pictureList.add(files);
+            if (files.getChild() == null) continue;
+            List<Files> childes = files.getChild().stream().peek(value -> value.setParentId(files.getId())).toList();
+            deepCreate(childes, index += 1);
         }
-        pictureService.createData(createFiles);
     }
 }

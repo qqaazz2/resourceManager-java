@@ -65,6 +65,7 @@ public class FilesUtils {
             files.setType(type);
             files.setFileType(java.nio.file.Files.probeContentType(Path.of(file.getPath())));
             files.setFile(file);
+            files.setFileSize((int) file.length());
             files.setHash(this.getFileChecksum(file));
             files.setModifiableName(file.getName());
             files.setParentId(parentId);

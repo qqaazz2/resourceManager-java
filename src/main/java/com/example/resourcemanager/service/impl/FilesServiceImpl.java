@@ -46,7 +46,7 @@ public class FilesServiceImpl extends ServiceImpl<FilesMapper, Files> implements
     @Override
     public void rename(Integer id, String name) {
         LambdaUpdateWrapper<Files> updateWrapper = new LambdaUpdateWrapper<Files>();
-        updateWrapper.eq(Files::getId, id).set(Files::getModifiableName, name);
+        updateWrapper.eq(Files::getId, id).set(Files::getFileName, name);
         ValidationUtils.checkCondition(this.update(updateWrapper), "文件重命名失败");
     }
 
