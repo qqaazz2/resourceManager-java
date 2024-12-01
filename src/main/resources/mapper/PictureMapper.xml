@@ -129,7 +129,7 @@
         SELECT count(*) FROM files
         LEFT JOIN picture ON files.id = picture.files_id
         WHERE type = 3 AND deleted = 1 AND is_folder = 2
-        <if test="love != null and love != ''">
+        <if test="love != null and love != ''"> 
             and love = #{love}
         </if>
         <if test="display != null and display != ''">
