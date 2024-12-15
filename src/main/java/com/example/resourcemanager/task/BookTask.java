@@ -62,7 +62,8 @@ public class BookTask extends AsyncTask {
 
         createFiles.removeIf(value -> value.getFileName().equals("cover"));
         createFiles.removeIf(value -> value.getFileType().equals("image/jpeg"));
-        if(createFiles.size() == 0) return;;
+        if (createFiles.size() == 0) return;
+        ;
 
         createCover();
 
@@ -90,20 +91,24 @@ public class BookTask extends AsyncTask {
         if (!executor.isShutdown()) {
             executor.shutdownNow();
         }
-        System.out.println(1231123);
         coverList = filesService.createFiles(coverList);
         Map<String, Integer> map = coverList.stream().collect(Collectors.toMap(Files::getFileName, Files::getId));
         List<Integer> list = new ArrayList<>();
         for (Book book : bookList) {
-            Integer coverId = map.get(book.getHash() + ".jpg");
-            book.setCoverId(coverId);
+            Integer coverId = null;
+            if (map.containsKey(book.getHash() + ".jpg")) {
+                coverId = map.get(book.getHash() + ".jpg");
+                book.setCoverId(coverId);
+            }
 
             if (!list.contains(book.getParentId()) && folderMap.size() > 0) {
                 System.out.println(folderMap);
                 System.out.println(book.getParentId());
                 Series series = new Series();
                 series.setFilesId(book.getParentId());
-                series.setCoverId(coverId);
+                if (coverId != null) {
+                    series.setCoverId(coverId);
+                }
                 series.setName(folderMap.get(book.getParentId()).getFileName());
                 series.setAuthor(book.getAuthor());
                 series.setProfile(book.getProfile());
@@ -199,7 +204,7 @@ class GetBookCoverTask implements Callable<Book> {
                         outputStream.write(data);
                     }
                 }
-                BookTask.coverList.add(filesUtils.createFiles(cover, 0, BookTask.coverFiles.getId()));
+                BookTask.coverList.add(filesUtils.createFiles(cover, 0, BookTask.coverFiles.getId(),0));
             } catch (Exception e) {
                 return book;
             }

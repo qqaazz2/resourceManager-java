@@ -54,6 +54,7 @@ public abstract class AsyncTask {
         List<Files> filesList = new ArrayList<>();
         System.out.println("currentFolderID" + "21312" + currentFolderID);
         System.out.println(files.length);
+        int index = 0;
         for (File file : files) {
             //判断文件是否为文件夹
             if (file.isDirectory()) {
@@ -106,7 +107,8 @@ public abstract class AsyncTask {
                 }
                 deepFolder(file.listFiles(), type, renamePath, pID);
             } else if (file.isFile() && !filesUtils.isMetaFile(file)) {
-                list.add(new CheckFileTask(file, parentPath, currentFolderID, type, filesUtils, contentType, false));
+                list.add(new CheckFileTask(file, parentPath, currentFolderID, type, filesUtils, contentType, false,index));
+                index++;
             }
         }
 
@@ -122,11 +124,9 @@ public abstract class AsyncTask {
             boolean tasksCompleted = executor.awaitTermination(30, TimeUnit.SECONDS);
             while (!tasksCompleted) {
                 tasksCompleted = executor.awaitTermination(30, TimeUnit.SECONDS);
-                System.out.println(tasksCompleted);
             }
             // 所有任务完成后继续执行后续操作
             rename(); // 重命名文件操作
-            System.out.println(createFiles);
             if (!createFiles.isEmpty()) {
                 create(); // 创建新的文件
             }
@@ -203,8 +203,8 @@ class CheckFileTask extends Thread {
     private Integer type;
     private FilesUtils filesUtils;
     private Integer contentType;
-
     private Boolean hasFolder = false;
+    private int order;
 
     @Override
     public void run() {
@@ -216,7 +216,7 @@ class CheckFileTask extends Thread {
             //判断文件hash是否相同 不相同则为新文件
             if (!files.getHash().equals(fileHash)) {
                 deep(AsyncTask.createFiles);
-                if (!hasFolder) AsyncTask.createFiles.add(filesUtils.createFiles(file, contentType, currentFolderID));
+                if (!hasFolder) AsyncTask.createFiles.add(filesUtils.createFiles(file, contentType, currentFolderID,order));
             } else {
                 //判断上级文件夹是否重命名了 重命名就更改文件路径
                 if (type == 2) {
@@ -231,7 +231,7 @@ class CheckFileTask extends Thread {
         } else {
             //不在 则为新的文件
             deep(AsyncTask.createFiles);
-            if (!hasFolder) AsyncTask.createFiles.add(filesUtils.createFiles(file, contentType, currentFolderID));
+            if (!hasFolder) AsyncTask.createFiles.add(filesUtils.createFiles(file, contentType, currentFolderID,order));
         }
     }
 
@@ -240,7 +240,7 @@ class CheckFileTask extends Thread {
         for (Files files : list) {
             if (files.getFilePath().equals(parent)) {
                 hasFolder = true;
-                files.addChild(filesUtils.createFiles(file, contentType, currentFolderID));
+                files.addChild(filesUtils.createFiles(file, contentType, currentFolderID,order));
             }
 
             if (files.getChild() != null) deep(files.getChild());

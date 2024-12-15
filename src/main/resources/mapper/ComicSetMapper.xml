@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.resourcemanager.mapper.comic.ComicSetMapper">
+    <resultMap id="comicSetList" type="com.example.resourcemanager.dto.comic.ComicSetListDTO">
+        <id column="id" property="id"/>
+        <result column="files_id" property="filesId"/>
+        <result column="status" property="status"/>
+        <result column="cover_path" property="coverPath"/>
+        <result column="love" property="love"/>
+        <result column="name" property="name"/>
+        <result column="read_status" property="readStatus"/>
+    </resultMap>
+
+    <resultMap id="comicSetDetail" type="com.example.resourcemanager.dto.comic.ComicSetDetailDTO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="author" property="author"/>
+        <result column="status" property="status"/>
+        <result column="note" property="note"/>
+        <result column="press" property="press"/>
+        <result column="language" property="language"/>
+        <result column="love" property="love"/>
+        <result column="cover_path" property="coverPath"/>
+        <result column="last_read_time" property="lastReadTime"/>
+        <result column="read_status" property="readStatus"/>
+        <result column="comic_count" property="comicCount"/>
+    </resultMap>
+
+    <resultMap id="comicList" type="com.example.resourcemanager.dto.comic.ComicListDTO">
+        <id column="id" property="id"/>
+        <result column="read_time" property="readTime"/>
+        <result column="status" property="status"/>
+        <result column="name" property="name"/>
+        <result column="total" property="total"/>
+        <result column="number" property="number"/>
+        <result column="file_path" property="filePath"/>
+        <result column="cover_path" property="coverPath"/>
+    </resultMap>
+
+    <select id="getList" resultMap="comicSetList" parameterType="com.example.resourcemanager.dto.comic.ComicSetListQueryCondition">
+        SELECT
+        comic_set.id,
+        comic_set.files_id,
+        comic_set.status,
+        file_path as cover_path,
+        love,
+        comic_set.name,
+        read_status
+        FROM
+        comic_set
+        LEFT JOIN files AS cover ON comic_set.cover = cover.id
+        WHERE comic_set.deleted = 1
+        <if test="status != null and status != ''">
+            and comic_set.status = #{status}
+        </if>
+        <if test="love != null and love != ''">
+            and love = #{love}
+        </if>
+        LIMIT #{offset},#{limit}
+    </select>
+
+    <select id="count" resultType="int" parameterType="com.example.resourcemanager.dto.comic.ComicSetListQueryCondition">
+        SELECT count(*) FROM comic_set
+        LEFT JOIN files AS cover ON comic_set.cover = cover.id
+        WHERE comic_set.deleted = 1
+        <if test="status != null and status != ''">
+            and comic_set.status = #{status}
+        </if>
+        <if test="love != null and love != ''">
+            and love = #{love}
+        </if>
+    </select>
+
+    <select id="getDetail" resultMap="comicSetDetail" parameterType="int">
+        SELECT
+            comic_set.id,
+            `name`,
+            author,
+            comic_set.`status`,
+            `note`,
+            `press`,
+            `language`,
+            `love`,
+            last_read_time,
+            read_status,
+            cover.file_path as cover_path,
+            COUNT(comic_set.id) as comic_count
+        FROM
+            comic_set
+        LEFT JOIN files AS cover ON comic_set.cover = cover.id
+        LEFT JOIN files AS child ON comic_set.files_id = child.parent_id
+        WHERE
+            comic_set.id = #{id} AND
+            comic_set.deleted = 1
+        GROUP BY comic_set.id
+    </select>
+
+    <select id="getComicList" resultMap="comicList" parameterType="com.example.resourcemanager.dto.comic.ComicSetListQueryCondition">
+        SELECT
+            comic.id,
+            `read_time`,
+            comic.`status`,
+            files.file_name as `name`,
+            total,
+            number,
+            files.file_path,
+            cover.file_path as cover_path
+        FROM
+            comic
+        LEFT JOIN files ON comic.files_id = files.id
+        LEFT JOIN files AS cover ON comic.cover = cover.id
+        WHERE
+            files.type = 2
+            AND files.parent_id = #{id}
+            AND files.deleted = 1
+        LIMIT #{offset},#{limit}
+    </select>
+</mapper>

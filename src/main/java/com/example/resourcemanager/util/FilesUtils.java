@@ -39,7 +39,7 @@ public class FilesUtils {
                 files.setFile(file);
                 map.put(files.getFileName(), files);
             }
-            list.add(createFiles(file, type, -1));
+            list.add(createFiles(file, type, -1,0));
         }
         filesService.saveBatch(list);
         map.putAll(list.stream().collect(Collectors.toMap(Files::getFileName, files -> files)));
@@ -50,14 +50,14 @@ public class FilesUtils {
         Map<String, Files> map = new HashMap<>();
         List<Files> list = new ArrayList<>();
         for (File file : fileList) {
-            list.add(createFiles(file, type, -1));
+            list.add(createFiles(file, type, -1,0));
         }
         filesService.saveBatch(list);
         map.putAll(list.stream().collect(Collectors.toMap(Files::getFileName, files -> files)));
         return map;
     }
 
-    public Files createFiles(File file, Integer type, Integer parentId) {
+    public Files createFiles(File file, Integer type, Integer parentId,Integer sort) {
         Files files = new Files();
         try {
             files.setFileName(file.getName());
@@ -69,6 +69,7 @@ public class FilesUtils {
             files.setHash(this.getFileChecksum(file));
             files.setModifiableName(file.getName());
             files.setParentId(parentId);
+            files.setSort(sort);
         } catch (IOException e) {
             e.printStackTrace();
             throw new BizException("获取文件类型失败");

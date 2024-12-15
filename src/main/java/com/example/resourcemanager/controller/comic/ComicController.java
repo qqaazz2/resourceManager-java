@@ -3,10 +3,18 @@ package com.example.resourcemanager.controller.comic;
 import com.example.resourcemanager.common.BizException;
 import com.example.resourcemanager.common.ResultResponse;
 import com.example.resourcemanager.common.UploadFile;
+import com.example.resourcemanager.dto.PageVO;
+import com.example.resourcemanager.dto.QueryCondition;
+import com.example.resourcemanager.dto.comic.ComicSetDetailDTO;
+import com.example.resourcemanager.dto.comic.ComicSetListQueryCondition;
 import com.example.resourcemanager.entity.Files;
+import com.example.resourcemanager.entity.comic.ComicSet;
 import com.example.resourcemanager.service.comic.ComicService;
+import com.example.resourcemanager.service.comic.ComicSetService;
 import com.example.resourcemanager.task.ComicTask;
 import jakarta.annotation.Resource;
+import org.apache.ibatis.annotations.Update;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,26 +26,54 @@ import java.util.Map;
 @RequestMapping("/comic")
 public class ComicController {
     @Resource
-    ComicService comicService;
+    ComicSetService comicSetService;
 
     @Resource
-    UploadFile uploadFile;
+    ComicService comicService;
 
     @Resource
     ComicTask comicTask;
 
-    @PostMapping("/upload")
-    public ResultResponse upload(@RequestParam MultipartFile[] files, @RequestParam(required = false,defaultValue = "0") Integer id) {
-        String[] formats = {"zip"};
-        Map<String, Files> map = uploadFile.uploadFile(files," /comic/", formats,2);
-
-        comicService.addComic(map,id);
+    @GetMapping("/scanning")
+    public ResultResponse upload(@RequestParam(required = false, defaultValue = "") String path) {
+        comicTask.start(path);
         return ResultResponse.success();
     }
 
-    @GetMapping("/scanning")
-    public ResultResponse upload(@RequestParam(required = false,defaultValue = "") String path){
-        comicTask.start(path);
+    @GetMapping("/getList")
+    public ResultResponse getList(ComicSetListQueryCondition queryCondition) {
+        return ResultResponse.success(comicSetService.getList(queryCondition));
+    }
+
+    @GetMapping("/setLove")
+    public ResultResponse setLove(@RequestParam Integer id, @RequestParam Integer love) {
+        comicSetService.setLove(id,love);
         return ResultResponse.success();
+    }
+
+    @GetMapping("/getDetail")
+    public ResultResponse getDetail(@RequestParam Integer id) {
+        return ResultResponse.success(comicSetService.getDetail(id));
+    }
+
+    @PostMapping("/updateData")
+    public ResultResponse updateData(@Validated({Update.class}) @RequestBody ComicSetDetailDTO comicSet){
+        comicSetService.updateData(comicSet);
+        return ResultResponse.success();
+    }
+
+    @GetMapping("/getPageList")
+    public ResultResponse getPageList(@RequestParam String path){
+        return ResultResponse.success(comicService.getPageList(path));
+    }
+
+    @GetMapping("/getComicList")
+    public ResultResponse getComicList(ComicSetListQueryCondition queryCondition) {
+        return ResultResponse.success(comicService.getList(queryCondition));
+    }
+
+    @GetMapping("/updateNumber")
+    public ResultResponse updateNumber(@RequestParam Integer id,@RequestParam Integer num,@RequestParam Boolean over,@RequestParam Integer filesId) {
+        return ResultResponse.success(comicService.updateNumber(id,num,over,filesId));
     }
 }

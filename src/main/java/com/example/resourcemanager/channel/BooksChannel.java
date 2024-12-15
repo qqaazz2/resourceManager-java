@@ -37,7 +37,6 @@ public class BooksChannel implements ApplicationContextAware {
     public void onOpen(Session session, @PathParam("detailsID") Integer detailsID) {
         this.session = session;
         this.detailsID = detailsID;
-        System.out.println(detailsID);
         booksDetailsMapper = applicationContext.getBean(BooksDetailsMapper.class);
         redisTemplate = applicationContext.getBean("redisTemplate", RedisTemplate.class);
         booksMapper = applicationContext.getBean(BooksMapper.class);

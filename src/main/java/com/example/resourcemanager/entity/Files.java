@@ -33,7 +33,7 @@ public class Files {
     private String modifiableName;
     private String hash;
     private String cover;
-
+    private Integer sort;
     @TableField(exist = false)
     private File file;
     @TableField(exist = false)

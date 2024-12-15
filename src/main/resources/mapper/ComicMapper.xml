@@ -3,7 +3,51 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.resourcemanager.mapper.comic.ComicMapper">
-    <select id="getList" resultType="com.example.resourcemanager.entity.comic.Comic">
-        select * from comic ;
+    <resultMap id="comicList" type="com.example.resourcemanager.dto.comic.ComicListDTO">
+        <id column="id" property="id"/>
+        <result column="files_id" property="filesId"/>
+        <result column="read_time" property="readTime"/>
+        <result column="status" property="status"/>
+        <result column="name" property="name"/>
+        <result column="total" property="total"/>
+        <result column="number" property="number"/>
+        <result column="file_path" property="filePath"/>
+        <result column="cover_path" property="coverPath"/>
+    </resultMap>
+
+    <select id="getList" resultMap="comicList" parameterType="com.example.resourcemanager.dto.comic.ComicSetListQueryCondition">
+        SELECT
+            comic.id,
+            files_id,
+            `read_time`,
+            comic.`status`,
+            files.file_name as `name`,
+            total,
+            number,
+            files.file_path,
+            cover.file_path as cover_path
+        FROM
+            comic
+        LEFT JOIN files ON comic.files_id = files.id
+        LEFT JOIN files AS cover ON comic.cover = cover.id
+        WHERE
+            files.type = 2
+            AND files.parent_id = #{id}
+            AND files.deleted = 1
+<!--        ORDER BY files.sort-->
+        LIMIT #{offset},#{limit}
+    </select>
+
+    <select id="count" resultType="int" parameterType="com.example.resourcemanager.dto.comic.ComicSetListQueryCondition">
+        SELECT
+            count(*)
+        FROM
+            comic
+        LEFT JOIN files ON comic.files_id = files.id
+        LEFT JOIN files AS cover ON comic.cover = cover.id
+        WHERE
+            files.type = 2
+            AND files.parent_id = #{id}
+            AND files.deleted = 1
     </select>
 </mapper>
