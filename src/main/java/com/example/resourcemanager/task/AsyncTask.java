@@ -45,7 +45,7 @@ public abstract class AsyncTask {
     static List<Files> createFiles = new ArrayList<>(); //需要新增的文件夹
     static Files createData = new Files(); //需要新增的文件夹
     static List<Files> renameFiles = new ArrayList<>(); //需要重命名的文件及文件夹
-    ExecutorService executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(200));
+    ExecutorService executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(20000));
     List<CheckFileTask> list = new ArrayList<>();
 
     Map<String, Integer> folders = new HashMap<>();//文件夹的FilesID;
@@ -173,7 +173,7 @@ public abstract class AsyncTask {
         resourcesFile = new File(filePath + resourcesPath);
 
         if (resourcesFile.isFile()) throw new BizException("4000", "只能对文件夹扫描");
-        executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(200));
+        executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(20000));
         filesList = filesService.getByType(contentType);
 
         filesUtils.checkMetaFile(resourcesFile);

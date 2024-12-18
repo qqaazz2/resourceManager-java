@@ -69,7 +69,7 @@ public class BookTask extends AsyncTask {
 
         deepCreate(createFiles, 1);
         List<Future<Book>> futureList = new ArrayList<>();
-        ExecutorService executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(200));
+        ExecutorService executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(5000));
         for (Files files : epubList) {
             Future<Book> future = executor.submit(new GetBookCoverTask(files, filesUtils));
             futureList.add(future);

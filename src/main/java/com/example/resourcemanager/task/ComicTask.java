@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -65,7 +66,7 @@ public class ComicTask extends AsyncTask {
         deepCreate(createFiles, 1);
 
         List<Future<Comic>> futureList = new ArrayList<>();
-        ExecutorService executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(200));
+        ExecutorService executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(20000));
         for (Files files : comicList) {
             Future<Comic> future = executor.submit(new GetComicTask(files, filesUtils));
             futureList.add(future);
@@ -79,7 +80,7 @@ public class ComicTask extends AsyncTask {
                 e.printStackTrace();
                 executor.shutdownNow();
                 future.cancel(true);
-                throw new BizException("4000", "EPUB文件识别失败，请重试");
+                throw new BizException("4000", e.getMessage());
             }
         }
         if (!executor.isShutdown()) {
@@ -159,7 +160,7 @@ class GetComicTask implements Callable<Comic> {
     @Override
     public Comic call() {
         File cover = new File(ComicTask.coverFiles.getFilePath() + File.separator + files.getHash() + ".jpg");
-        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(files.getFile()));
+        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(files.getFile()), Charset.forName("GBK"));
              OutputStream outputStream = new FileOutputStream(cover)) {
             ZipEntry entry;
             int fileCount = 0;

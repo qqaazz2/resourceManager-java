@@ -62,7 +62,7 @@ public class BooksDetailsServiceImpl extends ServiceImpl<BooksDetailsMapper, Boo
     public Boolean addDetails(Integer booksID, List<File> list) {
         atomicBoolean.set(false);
         count = Math.toIntExact(booksDetailsMapper.selectCount(new UpdateWrapper<BooksDetails>().eq("books_id", booksID)));
-        ExecutorService executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(20));
+        ExecutorService executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(1000));
         List<Callable<BooksDetails>> callableList = new ArrayList<>();
         List<BooksDetails> booksDetailsList = new ArrayList<>();
         int index = 0;

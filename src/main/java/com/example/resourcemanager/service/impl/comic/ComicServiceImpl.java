@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,7 +97,7 @@ public class ComicServiceImpl extends ServiceImpl<ComicMapper, Comic> implements
             tempFolder.mkdirs();
         }
         File zipFile = new File(cbzFilePath);
-        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipFile))) {
+        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipFile), Charset.forName("GBK"))) {
             ZipEntry zipEntry;
             byte[] buffer = new byte[1024];
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
