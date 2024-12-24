@@ -35,6 +35,7 @@
             series
         LEFT JOIN files ON series.cover_id = files.id
         WHERE series.deleted = 1
+        AND is_child = 1
         <if test="love != null and love != ''">
             and love = #{love}
         </if>

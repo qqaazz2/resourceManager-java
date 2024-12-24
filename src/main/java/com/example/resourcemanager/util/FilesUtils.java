@@ -7,6 +7,7 @@ import com.example.resourcemanager.entity.MetaData;
 import com.example.resourcemanager.service.impl.FilesServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,8 @@ public class FilesUtils {
     String metaName;
     @Resource
     FilesServiceImpl filesService;
+
+    private static final Tika tika = new Tika();
 
     public Map<String, Files> createFile(List<File> fileList, Integer type) {
         Map<String, Files> map = new HashMap<>();
@@ -63,9 +66,9 @@ public class FilesUtils {
             files.setFileName(file.getName());
             files.setFilePath(file.getPath());
             files.setType(type);
-            files.setFileType(java.nio.file.Files.probeContentType(Path.of(file.getPath())));
+            files.setFileType(tika.detect(file));
             files.setFile(file);
-            files.setFileSize((int) file.length());
+            files.setFileSize(file.length());
             files.setHash(this.getFileChecksum(file));
             files.setModifiableName(file.getName());
             files.setParentId(parentId);
@@ -85,7 +88,7 @@ public class FilesUtils {
         files.setFile(file);
         files.setIsFolder(1);
         files.setType(type);
-        files.setFileSize(size);
+        files.setFileSize(size.longValue());
         files.setModifiableName(file.getName());
         if (parentId != -1) files.setParentId(parentId);
         return files;

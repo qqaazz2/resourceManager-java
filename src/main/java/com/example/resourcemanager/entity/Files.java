@@ -23,7 +23,7 @@ public class Files {
     protected Integer status;
 
     private String fileName;
-    private Integer fileSize;
+    private Long fileSize;
     private String filePath;
     private String fileType;
     private String fileNote;
@@ -40,6 +40,8 @@ public class Files {
     private Object other;
     @TableField(exist = false)
     private List<Files> child;
+    @TableField(exist = false)
+    private Integer count;
 
     @Override
     public boolean equals(Object o) {

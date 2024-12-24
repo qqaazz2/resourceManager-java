@@ -160,6 +160,7 @@ class GetComicTask implements Callable<Comic> {
     @Override
     public Comic call() {
         File cover = new File(ComicTask.coverFiles.getFilePath() + File.separator + files.getHash() + ".jpg");
+        boolean isExists = cover.exists();
         try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(files.getFile()), Charset.forName("GBK"));
              OutputStream outputStream = new FileOutputStream(cover)) {
             ZipEntry entry;
@@ -185,7 +186,7 @@ class GetComicTask implements Callable<Comic> {
                 ComicTask.folderMap.put(files.getParentId(), comicFolder);
             }
 
-            ComicTask.coverList.add(filesUtils.createFiles(cover, 0, ComicTask.coverFiles.getId(), files.getSort()));
+            if(!isExists) ComicTask.coverList.add(filesUtils.createFiles(cover, 0, ComicTask.coverFiles.getId(), files.getSort()));
 
             return comic;
         } catch (FileNotFoundException e) {

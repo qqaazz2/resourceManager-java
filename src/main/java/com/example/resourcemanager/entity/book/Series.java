@@ -39,4 +39,6 @@ public class Series {
     Integer num;
 
     Integer coverId;
+
+    Integer isChild;
 }

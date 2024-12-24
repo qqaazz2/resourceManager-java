@@ -14,6 +14,7 @@ import com.example.resourcemanager.service.comic.ComicSetService;
 import com.example.resourcemanager.task.ComicTask;
 import jakarta.annotation.Resource;
 import org.apache.ibatis.annotations.Update;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,7 +48,7 @@ public class ComicController {
 
     @GetMapping("/setLove")
     public ResultResponse setLove(@RequestParam Integer id, @RequestParam Integer love) {
-        comicSetService.setLove(id,love);
+        comicSetService.setLove(id, love);
         return ResultResponse.success();
     }
 
@@ -57,13 +58,13 @@ public class ComicController {
     }
 
     @PostMapping("/updateData")
-    public ResultResponse updateData(@Validated({Update.class}) @RequestBody ComicSetDetailDTO comicSet){
+    public ResultResponse updateData(@Validated({Update.class}) @RequestBody ComicSetDetailDTO comicSet) {
         comicSetService.updateData(comicSet);
         return ResultResponse.success();
     }
 
     @GetMapping("/getPageList")
-    public ResultResponse getPageList(@RequestParam String path){
+    public ResultResponse getPageList(@RequestParam String path) {
         return ResultResponse.success(comicService.getPageList(path));
     }
 
@@ -73,7 +74,14 @@ public class ComicController {
     }
 
     @GetMapping("/updateNumber")
-    public ResultResponse updateNumber(@RequestParam Integer id,@RequestParam Integer num,@RequestParam Boolean over,@RequestParam Integer filesId) {
-        return ResultResponse.success(comicService.updateNumber(id,num,over,filesId));
+    public ResultResponse updateNumber(@RequestParam Integer id, @RequestParam Integer num, @RequestParam Boolean over, @RequestParam Integer filesId) {
+        return ResultResponse.success(comicService.updateNumber(id, num, over, filesId));
+    }
+
+    @PreAuthorize("@customPermissionEvaluator.hasPermission(authentication,null,1)")
+    @GetMapping("/getMysteryComicList")
+    public ResultResponse getMysteryComicList(ComicSetListQueryCondition queryCondition) {
+        return ResultResponse.success();
+//        return ResultResponse.success(comicService.getList(queryCondition));
     }
 }

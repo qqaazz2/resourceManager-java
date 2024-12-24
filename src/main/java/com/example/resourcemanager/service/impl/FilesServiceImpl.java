@@ -1,22 +1,37 @@
 package com.example.resourcemanager.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.resourcemanager.common.BizException;
+import com.example.resourcemanager.dto.setting.ProportionDTO;
+import com.example.resourcemanager.dto.setting.TimeCountDTO;
 import com.example.resourcemanager.entity.Files;
 import com.example.resourcemanager.mapper.FilesMapper;
 import com.example.resourcemanager.service.FilesService;
-import com.example.resourcemanager.util.FilesUtils;
 import com.example.resourcemanager.util.ValidationUtils;
+import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class FilesServiceImpl extends ServiceImpl<FilesMapper, Files> implements FilesService {
+
+    @Value("${file.upload}")
+    String filePath;
+
+    @Resource
+    FilesMapper filesMapper;
 
     @Override
     public List<Files> getByType(Integer type) {
@@ -65,5 +80,98 @@ public class FilesServiceImpl extends ServiceImpl<FilesMapper, Files> implements
         boolean isTrue = this.save(files);
         if (!isTrue) throw new BizException("4000", "创建文件数据失败");
         return files;
+    }
+
+    @Override
+    public List<ProportionDTO> filesProportion() {
+        QueryWrapper<Files> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("deleted", 1) // deleted = 1
+                .eq("is_folder", 2) // is_folder = 2
+                .select("type", "COUNT(type) as count") // 选择字段，COUNT(type) 给它别名为 count
+                .groupBy("type"); // 按 type 分组
+        List<Files> list = filesMapper.selectList(queryWrapper);
+
+        List<ProportionDTO> dtoList = new ArrayList<>();
+        for (Files files : list) {
+            Integer type = files.getType();
+            Integer count = files.getCount();
+            dtoList.add(new ProportionDTO(type, count));
+        }
+
+        return dtoList;
+    }
+
+    @Override
+    public Map<String, Object> getFilesCount() {
+        QueryWrapper<Files> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_folder", 2);
+        queryWrapper.select("COUNT(*) as count", "SUM(file_size) as fileSize");
+        Files files = this.getOne(queryWrapper);
+
+        BigDecimal byteValue = new BigDecimal(files.getFileSize());
+        BigDecimal divisor = new BigDecimal("1024").multiply(new BigDecimal("1024")).multiply(new BigDecimal("1024"));
+        BigDecimal result = byteValue.divide(divisor, 2, RoundingMode.HALF_UP);  // 保留4位小数，四舍五入
+        System.out.println("files.getFileSize()");
+        System.out.println(result);
+        Map<String, Object> map = new HashMap<>();
+        map.put("count", files.getCount());
+        map.put("size", result.doubleValue());
+        return map;
+    }
+
+    @Override
+    public List<TimeCountDTO> getYearMonth() {
+
+        LambdaQueryWrapper<Files> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Files::getIsFolder, 2);
+        queryWrapper.ne(Files::getType, 0);
+        queryWrapper.select(Files::getAdd_time);
+        List<LocalDateTime> list = this.listObjs(queryWrapper, obj -> (LocalDateTime) obj);
+        List<Date> dateList = list.stream()
+                .map(localDateTime -> Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant()))
+                .collect(Collectors.toList());
+        return getCount(dateList);
+    }
+
+    public List<TimeCountDTO> getCount(List<Date> list) {
+        Map<Integer, TimeCountDTO> map = new HashMap<>();
+        Calendar cal = Calendar.getInstance();
+
+        List<TimeCountDTO> timeCountDTOList = list.stream().collect(Collectors.groupingBy(value -> {
+            cal.setTime(value);
+            return cal.get(Calendar.YEAR);
+        }, Collectors.groupingBy(
+                value -> {
+                    cal.setTime(value);
+                    return cal.get(Calendar.MONTH) + 1; // 按月份分组，月份从1开始
+                },
+                Collectors.counting() // 计数
+        ))).entrySet().stream().map(entry -> {
+            Integer year = entry.getKey();
+            Integer count = 0;
+            Map<Integer, Long> monthCounts = entry.getValue();
+
+            List<TimeCountDTO> timeCountDTOS = new ArrayList<>();
+            for (int i = 1; i <= 12; i++) {
+                TimeCountDTO timeCountDTO = new TimeCountDTO();
+                timeCountDTO.setTime(i);
+                if (monthCounts.containsKey(i)) {
+                    timeCountDTO.setCount(Math.toIntExact(monthCounts.get(i)));
+                    count += Math.toIntExact(monthCounts.get(i));
+                } else {
+                    timeCountDTO.setCount(0);
+                }
+                timeCountDTOS.add(timeCountDTO);
+            }
+
+            TimeCountDTO timeCountDTO = new TimeCountDTO();
+            timeCountDTO.setTime(year);
+            timeCountDTO.setCount(count);
+            timeCountDTO.setChildren(timeCountDTOS);
+
+            return timeCountDTO;
+        }).toList();
+
+        return timeCountDTOList;
     }
 }

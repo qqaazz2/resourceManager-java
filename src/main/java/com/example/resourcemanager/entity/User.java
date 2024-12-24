@@ -17,6 +17,8 @@ public class User implements Serializable {
     private String password;
     private Integer theme;
     private Date expireTime;
+    private Integer mystery;
+    private String mysteryPassword;
 
     //验证码
     @TableField(exist = false)

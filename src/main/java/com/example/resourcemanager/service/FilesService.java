@@ -1,10 +1,12 @@
 package com.example.resourcemanager.service;
 
+import com.example.resourcemanager.dto.setting.ProportionDTO;
+import com.example.resourcemanager.dto.setting.TimeCountDTO;
 import com.example.resourcemanager.entity.Files;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public interface FilesService {
@@ -22,4 +24,10 @@ public interface FilesService {
     Files getFiles(Files files);
 
     Files createFile(Files files);
+
+    List<ProportionDTO> filesProportion();
+
+    Map<String,Object> getFilesCount();
+
+    List<TimeCountDTO> getYearMonth();
 }
