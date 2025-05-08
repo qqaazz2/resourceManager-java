@@ -1,6 +1,7 @@
 package com.example.resourcemanager.controller;
 
 import com.example.resourcemanager.common.ResultResponse;
+import com.example.resourcemanager.common.UploadFile;
 import com.example.resourcemanager.dto.UserInfo;
 import com.example.resourcemanager.entity.User;
 import com.example.resourcemanager.service.UserService;
@@ -9,8 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -18,6 +23,9 @@ import java.util.Map;
 public class UserController {
     @Resource
     UserService userService;
+
+    @Resource
+    UploadFile uploadFile;
 
     @Resource
     private PasswordEncoder passwordEncoder;
@@ -55,6 +63,15 @@ public class UserController {
     public ResultResponse updatePassWord(@RequestBody UserInfo userInfo) {
         userService.updatePassWord(userInfo.getOldPassWord(), userInfo.getNewPassWord());
         return ResultResponse.success();
+    }
+
+    @PostMapping("/uploadCover")
+    public ResultResponse uploadCover(@RequestParam MultipartFile[] files) {
+        String[] formats = {"jpg", "png"};
+        String pathName = "/user";
+        List<File> list = uploadFile.upload(files, pathName, formats);
+        userService.updateImage(list.get(0).getPath());
+        return ResultResponse.success(list.get(0).getPath());
     }
 
     @PreAuthorize("@customPermissionEvaluator.hasPermission(authentication,null,1)")

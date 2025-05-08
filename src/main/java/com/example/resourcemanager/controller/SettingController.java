@@ -12,7 +12,7 @@ public class SettingController {
     FilesService filesService;
 
     @GetMapping("proportion")
-    public ResultResponse scanning() {
+    public ResultResponse proportion() {
         return ResultResponse.success(filesService.filesProportion());
     }
 

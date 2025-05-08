@@ -24,4 +24,6 @@ public interface UserService extends IService<User> {
     void updatePassWord(String oldPassWord,String newPassword);
 
     void updateMysteryPassWord(String oldPassWord,String newPassword);
+
+    void updateImage(String cover);
 }

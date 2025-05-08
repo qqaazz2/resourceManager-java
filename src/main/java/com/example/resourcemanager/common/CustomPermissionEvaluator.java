@@ -17,8 +17,6 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         authentication = SecurityContextHolder.getContext().getAuthentication();
 
         LoginUser userDetails = (LoginUser) authentication.getPrincipal();
-        System.out.println(userDetails.getUser().getMystery());
-        System.out.println(userDetails.getUser().getMystery().equals(permission));
         return userDetails != null && userDetails.getUser().getMystery().equals(permission);
     }
 

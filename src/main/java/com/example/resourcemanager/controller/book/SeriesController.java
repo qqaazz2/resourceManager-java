@@ -51,4 +51,9 @@ public class SeriesController {
     public ResultResponse updateLastReadTime(@RequestParam Integer id) {
         return ResultResponse.success(seriesService.updateLastReadTime(id));
     }
+
+    @GetMapping("/randomData")
+    public ResultResponse randomData() {
+        return ResultResponse.success(seriesService.randomData());
+    }
 }

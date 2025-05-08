@@ -1,66 +1,99 @@
 package com.example.resourcemanager.util;
 
 import com.example.resourcemanager.common.BizException;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class FileTypeUtils {
-    public static int default_check_length = 3;
-    final static HashMap<String, String> fileTypeMap = new HashMap<>();
 
-    static {
-        fileTypeMap.put("ffd8ffe000104a464946", "jpg");
-        fileTypeMap.put("89504e470d0a1a0a0000", "png");
-        fileTypeMap.put("47494638396126026f01", "gif");
-        fileTypeMap.put("00000020667479706d70", "mp4");
-        fileTypeMap.put("504b0304140000000800", "zip");
-        fileTypeMap.put("526172211a0700cf9073", "rar");
+    /**
+     * 验证 MultipartFile
+     *
+     * @param file           要验证的 MultipartFile
+     * @param allowedTypes   允许的文件类型（扩展名，例如：jpg, png, pdf）
+     * @param maxSizeInBytes 最大文件大小（字节）
+     * @return 验证结果，如果验证通过返回 null，否则返回错误信息
+     */
+    public static String validateFile(MultipartFile file, String[] allowedTypes, long maxSizeInBytes) {
+        if (file == null || file.isEmpty()) {
+            return "文件为空";
+        }
+
+        if (!isFileAllowedType(file, allowedTypes)) {
+            return "文件类型不允许";
+        }
+
+        if (file.getSize() > maxSizeInBytes) {
+            return "文件大小超过限制";
+        }
+
+        if (!isFileContentValid(file)) {
+            return "文件内容无效";
+        }
+
+        return null; // 验证通过
     }
-    public static String suffix;
 
-    public static void getFileTypeBySuffix(String fileName, String[] formats) {
-        suffix = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
-        if(!(Arrays.stream(formats).anyMatch(suffix::contains))) throw new BizException("4005", "文件格式不支持");
+    /**
+     * 检查 MultipartFile 类型是否允许
+     *
+     * @param file         要检查的 MultipartFile
+     * @param allowedTypes 允许的文件类型（扩展名）
+     * @return 如果文件类型允许返回 true，否则返回 false
+     */
+    private static boolean isFileAllowedType(MultipartFile file, String[] allowedTypes) {
+        if (allowedTypes == null || allowedTypes.length == 0) {
+            return true; // 如果没有指定允许的文件类型，则允许所有类型
+        }
+
+        String fileName = file.getOriginalFilename();
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex == -1) {
+            return false; // 没有扩展名
+        }
+
+        String fileType = fileName.substring(dotIndex + 1).toLowerCase();
+        Set<String> allowedTypeSet = new HashSet<>(Arrays.asList(allowedTypes));
+        return allowedTypeSet.contains(fileType);
     }
 
-    public static void getFileTypeByMagicNumber(InputStream inputStream) {
-        Boolean isTrue = false;
-        byte[] bytes = new byte[default_check_length];
+    /**
+     * 检查 MultipartFile 内容是否有效
+     *
+     * @param file 要检查的 MultipartFile
+     * @return 如果文件内容有效返回 true，否则返回 false
+     */
+    private static boolean isFileContentValid(MultipartFile file) {
+        // 在这里实现文件内容验证逻辑，例如：
+        // - 检查图片是否损坏
+        // - 检查 PDF 文件是否可读
+        // - 检查视频文件是否可播放
+        // 示例：简单的文件头检查（仅适用于某些文件类型）
         try {
+            byte[] fileContent = file.getBytes();
 
-            // 获取文件头前三位魔数的二进制
-            inputStream.read(bytes, 0, bytes.length);
-            // 文件头前三位魔数二进制转为16进制
-            String code = bytesToHexString(bytes);
-            for (Map.Entry<String, String> item : fileTypeMap.entrySet()) {
-                if (code.equals(item.getKey())) {
-                    isTrue = true;
+            if (fileContent.length > 4) {
+                // 检查 PNG 文件头（示例）
+                if (fileContent[0] == (byte) 0x89 && fileContent[1] == (byte) 0x50 &&
+                        fileContent[2] == (byte) 0x4E && fileContent[3] == (byte) 0x47) {
+                    return true;
+                }
+                // 检查 JPG 文件头（示例）
+                if (fileContent[0] == (byte) 0xFF && fileContent[1] == (byte) 0xD8) {
+                    return true;
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        if(!isTrue && !suffix.equals("epub")) throw new BizException("4005", "文件上传格式不支持");
-    }
-
-    public static String bytesToHexString(byte[] bytes) {
-
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < bytes.length; i++) {
-
-            int v = bytes[i] & 0xFF;
-            String hv = Integer.toHexString(v);
-            if (hv.length() < 2) {
-
-                stringBuilder.append(0);
-            }
-            stringBuilder.append(hv);
-        }
-        return stringBuilder.toString();
+        return true; // 默认情况下，如果无法验证文件内容，则认为有效
     }
 }

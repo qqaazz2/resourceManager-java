@@ -47,6 +47,8 @@ public abstract class AsyncTask {
     static List<Files> renameFiles = new ArrayList<>(); //需要重命名的文件及文件夹
     ExecutorService executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(20000));
     List<CheckFileTask> list = new ArrayList<>();
+    public static Files coverFiles = new Files();
+    List<String> skipFolder = new ArrayList<>();
 
     Map<String, Integer> folders = new HashMap<>();//文件夹的FilesID;
 
@@ -56,6 +58,7 @@ public abstract class AsyncTask {
         System.out.println(files.length);
         int index = 0;
         for (File file : files) {
+            if (!skipFolder.isEmpty() && skipFolder.contains(file.getName())) continue;
             //判断文件是否为文件夹
             if (file.isDirectory()) {
                 //判断文件夹中没有metadata 如果没有则为新创建的文件夹
@@ -107,7 +110,7 @@ public abstract class AsyncTask {
                 }
                 deepFolder(file.listFiles(), type, renamePath, pID);
             } else if (file.isFile() && !filesUtils.isMetaFile(file)) {
-                list.add(new CheckFileTask(file, parentPath, currentFolderID, type, filesUtils, contentType, false,index));
+                list.add(new CheckFileTask(file, parentPath, currentFolderID, type, filesUtils, contentType, false, index));
                 index++;
             }
         }
@@ -193,6 +196,26 @@ public abstract class AsyncTask {
     public void onDestroy() {
         executor.shutdown();
     }
+
+    public void createCover() {
+        File file = new File(filePath + resourcesPath + File.separator + "cover");
+        Files files = new Files();
+        files.setFileName("cover");
+        files.setParentId(-1);
+        files.setType(contentType);
+        files.setIsFolder(1);
+        coverFiles = filesService.getFiles(files);
+
+        if (!file.exists()) {
+            file.mkdirs();
+            filesUtils.checkMetaFile(file);
+        }
+
+        if (coverFiles == null) {
+            coverFiles = filesUtils.createFolder(file, -1, contentType, 0);
+            coverFiles = filesService.createFile(coverFiles);
+        }
+    }
 }
 
 @AllArgsConstructor
@@ -216,7 +239,8 @@ class CheckFileTask extends Thread {
             //判断文件hash是否相同 不相同则为新文件
             if (!files.getHash().equals(fileHash)) {
                 deep(AsyncTask.createFiles);
-                if (!hasFolder) AsyncTask.createFiles.add(filesUtils.createFiles(file, contentType, currentFolderID,order));
+                if (!hasFolder)
+                    AsyncTask.createFiles.add(filesUtils.createFiles(file, contentType, currentFolderID, order));
             } else {
                 //判断上级文件夹是否重命名了 重命名就更改文件路径
                 if (type == 2) {
@@ -231,7 +255,8 @@ class CheckFileTask extends Thread {
         } else {
             //不在 则为新的文件
             deep(AsyncTask.createFiles);
-            if (!hasFolder) AsyncTask.createFiles.add(filesUtils.createFiles(file, contentType, currentFolderID,order));
+            if (!hasFolder)
+                AsyncTask.createFiles.add(filesUtils.createFiles(file, contentType, currentFolderID, order));
         }
     }
 
@@ -240,7 +265,7 @@ class CheckFileTask extends Thread {
         for (Files files : list) {
             if (files.getFilePath().equals(parent)) {
                 hasFolder = true;
-                files.addChild(filesUtils.createFiles(file, contentType, currentFolderID,order));
+                files.addChild(filesUtils.createFiles(file, contentType, currentFolderID, order));
             }
 
             if (files.getChild() != null) deep(files.getChild());

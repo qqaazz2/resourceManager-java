@@ -57,6 +57,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         userInfo.setEmail(loginUser.getUser().getEmail());
         userInfo.setName(loginUser.getUser().getName());
         userInfo.setMystery(loginUser.getUser().getMystery());
+        userInfo.setCover(loginUser.getUser().getCover());
         Map<String, Object> map = new HashMap<>();
         map.put("token", token);
         map.put("userInfo", userInfo);
@@ -99,6 +100,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             userInfo.setEmail(loginUser.getUser().getEmail());
             userInfo.setName(loginUser.getUser().getName());
             userInfo.setMystery(loginUser.getUser().getMystery());
+            userInfo.setCover(loginUser.getUser().getCover());
             return userInfo;
         }
         throw new BizException(ExceptionEnum.SIGNATURE_NOT_MATCH);
@@ -162,7 +164,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (authentication != null && authentication.getPrincipal() instanceof LoginUser) {
             LoginUser loginUser = (LoginUser) authentication.getPrincipal();
 
-            if(!passwordEncoder.matches(oldPassWord,loginUser.getUser().getPassword())){
+            if (!passwordEncoder.matches(oldPassWord, loginUser.getUser().getPassword())) {
                 throw new BizException("4000", "旧密码错误，修改密码失败");
             }
 
@@ -182,7 +184,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (authentication != null && authentication.getPrincipal() instanceof LoginUser) {
             LoginUser loginUser = (LoginUser) authentication.getPrincipal();
 
-            if(!passwordEncoder.matches(oldPassWord,loginUser.getUser().getMysteryPassword())){
+            if (!passwordEncoder.matches(oldPassWord, loginUser.getUser().getMysteryPassword())) {
                 throw new BizException("4000", "旧密码错误，修改密码失败");
             }
 
@@ -196,6 +198,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, authentication.getCredentials());
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        } else {
+            throw new BizException(ExceptionEnum.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public void updateImage(String cover) {
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof LoginUser) {
+            LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+            updateWrapper.eq(User::getId, loginUser.getUser().getId());
+            updateWrapper.set(User::getCover, cover);
+            boolean update = this.update(updateWrapper);
+
+            if (!update) throw new BizException("4000", "修改头像失败");
         } else {
             throw new BizException(ExceptionEnum.INTERNAL_SERVER_ERROR);
         }

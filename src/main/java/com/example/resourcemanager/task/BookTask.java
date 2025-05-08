@@ -39,7 +39,6 @@ public class BookTask extends AsyncTask {
     public static List<Files> coverList = new ArrayList<>();
     public static List<Files> epubList = new ArrayList<>();
     public static Integer parentId = -1;
-    public static Files coverFiles = new Files();
     public List<Book> bookList = new ArrayList<>();
     public List<Series> seriesList = new ArrayList<>();
     public Map<Integer, Integer> updateSeries = new HashMap<>();
@@ -118,7 +117,8 @@ public class BookTask extends AsyncTask {
                 list.add(book.getParentId());
             }
         }
-
+        System.out.println(bookService+"bookService");
+        System.out.println(seriesList+"seriesList");
         if (seriesList.size() > 0) seriesService.createData(seriesList);
         bookService.createData(bookList);
 
@@ -144,26 +144,6 @@ public class BookTask extends AsyncTask {
             if (files.getChild() == null) continue;
             List<Files> childes = files.getChild().stream().peek(value -> value.setParentId(files.getId())).toList();
             deepCreate(childes, index += 1);
-        }
-    }
-
-    public void createCover() {
-        File file = new File(filePath + resourcesPath + File.separator + "cover");
-        Files files = new Files();
-        files.setFileName("cover");
-        files.setParentId(-1);
-        files.setType(contentType);
-        files.setIsFolder(1);
-        coverFiles = filesService.getFiles(files);
-
-        if (!file.exists()) {
-            file.mkdirs();
-            filesUtils.checkMetaFile(file);
-        }
-
-        if (coverFiles == null) {
-            coverFiles = filesUtils.createFolder(file, -1, contentType, 0);
-            coverFiles = filesService.createFile(coverFiles);
         }
     }
 }

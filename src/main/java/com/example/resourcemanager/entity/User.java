@@ -19,6 +19,8 @@ public class User implements Serializable {
     private Date expireTime;
     private Integer mystery;
     private String mysteryPassword;
+    private String cover;
+
 
     //验证码
     @TableField(exist = false)

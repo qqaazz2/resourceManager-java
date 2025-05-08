@@ -31,18 +31,16 @@ public class UploadFile {
         for (MultipartFile multipartFile : files) {
             String originalFileName = multipartFile.getOriginalFilename();
             try {
-                FileTypeUtils.getFileTypeBySuffix(originalFileName, formats);
-                FileTypeUtils.getFileTypeByMagicNumber(multipartFile.getInputStream());
-                System.out.println(file.getAbsolutePath());
-                File createFile = new File(file.getAbsolutePath() + File.separator + multipartFile.getOriginalFilename());
+                FileTypeUtils.validateFile(multipartFile, formats, 5000);
+                String relativePath = file.getPath() + File.separator + originalFileName + ".jpg"; // 构建相对路径
+                File createFile = new File(file.getAbsolutePath() + File.separator + originalFileName + ".jpg"); // 使用 filePath + 相对路径创建 File 对象
                 multipartFile.transferTo(createFile);
-                list.add(createFile);
+                list.add(new File(relativePath)); // 添加相对路径的 File 对象到列表
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new BizException("4004", "文件上传失败");
             }
         }
-
         return list;
     }
 
@@ -52,8 +50,7 @@ public class UploadFile {
         for (MultipartFile multipartFile : files) {
             String originalFileName = multipartFile.getOriginalFilename();
             try {
-                FileTypeUtils.getFileTypeBySuffix(originalFileName, formats);
-                FileTypeUtils.getFileTypeByMagicNumber(multipartFile.getInputStream());
+                FileTypeUtils.validateFile(multipartFile, formats,5000);
                 File createFile = new File(file.getAbsolutePath() + File.separator + multipartFile.getOriginalFilename());
                 list.add(createFile);
             } catch (Exception e) {

@@ -1,5 +1,6 @@
 package com.example.resourcemanager.config;
 
+import com.example.resourcemanager.common.CustomPermissionEvaluator;
 import com.example.resourcemanager.common.UserDetailsManager;
 import com.example.resourcemanager.filter.JwtAuthenticationTokenFilter;
 import com.example.resourcemanager.mapper.UserMapper;
@@ -16,6 +17,8 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -31,8 +34,13 @@ import java.util.List;
 @EnableWebSecurity
 @Configuration
 @AllArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
     private final ApplicationEventPublisher applicationEventPublisher;
+
+    @Resource
+    private CustomPermissionEvaluator customPermissionEvaluator;
+
     @Resource
     UserMapper userMapper;
 
@@ -48,7 +56,10 @@ public class SecurityConfig {
                 .sessionManagement(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new JwtAuthenticationTokenFilter(tokenService, redisTemplate), UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))//关闭
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/user/login").permitAll().requestMatchers("/user/code").permitAll().requestMatchers("/favicon.ico").permitAll().anyRequest().authenticated());
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/user/login").permitAll()
+                        .requestMatchers("/user/code").permitAll()
+//                        .requestMatchers("/files/**").permitAll()
+                        .anyRequest().authenticated());
         return httpSecurity.build();
     }
 

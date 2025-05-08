@@ -37,7 +37,6 @@ public class ComicTask extends AsyncTask {
 
     static Map<String, File> covers = new HashMap<>();
     public static Map<Integer, ComicFolder> folderMap = new HashMap<>();
-    public static Files coverFiles = new Files();
     public List<Files> comicList = new ArrayList<>();
     public List<Comic> comics = new ArrayList<>();
     public static List<Files> coverList = new ArrayList<>();
@@ -128,26 +127,6 @@ public class ComicTask extends AsyncTask {
             if (files.getChild() == null) continue;
             List<Files> childes = files.getChild().stream().peek(value -> value.setParentId(files.getId())).toList();
             deepCreate(childes, index += 1);
-        }
-    }
-
-    public void createCover() {
-        File file = new File(filePath + resourcesPath + File.separator + "cover");
-        Files files = new Files();
-        files.setFileName("cover");
-        files.setParentId(-1);
-        files.setType(contentType);
-        files.setIsFolder(1);
-        coverFiles = filesService.getFiles(files);
-
-        if (!file.exists()) {
-            file.mkdirs();
-            filesUtils.checkMetaFile(file);
-        }
-
-        if (coverFiles == null) {
-            coverFiles = filesUtils.createFolder(file, -1, contentType, 0);
-            coverFiles = filesService.createFile(coverFiles);
         }
     }
 }

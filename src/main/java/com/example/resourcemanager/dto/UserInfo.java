@@ -7,6 +7,7 @@ public class UserInfo {
     private String name;
     private String email;
     private int mystery;
+    private String cover;
 
     private String oldPassWord;
     private String newPassWord;

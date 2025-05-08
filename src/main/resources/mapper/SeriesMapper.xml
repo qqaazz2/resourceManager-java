@@ -18,29 +18,34 @@
         <result column="files_id" property="filesId"/>
     </resultMap>
 
-    <select id="getList" resultMap="seriesList" parameterType="com.example.resourcemanager.dto.book.SeriesListQueryCondition">
+    <select id="getList" resultMap="seriesList"
+            parameterType="com.example.resourcemanager.dto.book.SeriesListQueryCondition">
         SELECT
-            series.id,
-            series.`name`,
-            series.author,
-            series.over_status,
-            series.`status`,
-            series.love,
-            series.`profile`,
-            series.last_read_time,
-            series.num,
-            file_path,
-            files_id
+        series.id,
+        series.`name`,
+        series.author,
+        series.over_status,
+        series.`status`,
+        series.love,
+        series.`profile`,
+        series.last_read_time,
+        series.num,
+        file_path,
+        files_id
         FROM
-            series
+        series
         LEFT JOIN files ON series.cover_id = files.id
         WHERE series.deleted = 1
         AND is_child = 1
         <if test="love != null and love != ''">
             and love = #{love}
         </if>
+        <if test="name != null and name != ''">
+            <bind name="pattern" value="'%' + name + '%'"/>
+            and `name` LIKE #{pattern}
+        </if>
         <if test="status != null and status != ''">
-            and status = #{status}
+            and series.`status` = #{status}
         </if>
         <if test="overStatus != null and overStatus != ''">
             and over_status = #{overStatus}
@@ -54,8 +59,12 @@
         <if test="love != null and love != ''">
             and love = #{love}
         </if>
+        <if test="name != null and name != ''">
+            <bind name="pattern" value="'%' + name + '%'"/>
+            and `name` LIKE #{pattern}
+        </if>
         <if test="status != null and status != ''">
-            and status = #{status}
+            and series.`status` = #{status}
         </if>
         <if test="overStatus != null and overStatus != ''">
             and over_status = #{overStatus}

@@ -42,9 +42,15 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             Picture picture = new Picture();
             try {
                 picture.setFilesId(item.getId());
+                System.out.println("files:" + item.getFile().getPath());
                 BufferedImage bufferedImage = ImageIO.read(item.getFile());
-                int height = bufferedImage.getHeight();
-                int width = bufferedImage.getWidth();
+                System.out.println("bufferedImage:" + bufferedImage);
+                int height = 0;
+                int width = 0;
+                if (bufferedImage != null) {
+                    height = bufferedImage.getHeight();
+                    width = bufferedImage.getWidth();
+                }
                 picture.setHeight(height);
                 picture.setWidth(width);
                 picture.setCreateTime(new Date(item.getFile().lastModified()));
@@ -96,7 +102,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     @Override
     public void editData(PictureQueryCondition queryCondition) {
         filesService.rename(queryCondition.getId(), queryCondition.getName());
-        if(StringUtils.isBlank((String) queryCondition.getAuthor())) return;
+        if (StringUtils.isBlank((String) queryCondition.getAuthor())) return;
         LambdaUpdateWrapper<Picture> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Picture::getFilesId, queryCondition.getId()).set(Picture::getAuthor, queryCondition.getAuthor());
         ValidationUtils.checkCondition(this.update(updateWrapper), "作者修改失败");

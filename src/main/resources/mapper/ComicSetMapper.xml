@@ -58,6 +58,13 @@
         <if test="love != null and love != ''">
             and love = #{love}
         </if>
+        <if test="name != null and name != ''">
+            <bind name="pattern" value="'%' + name + '%'"/>
+            and `name` LIKE #{pattern}
+        </if>
+        <if test="readStatus != null and readStatus != ''">
+            and read_status = #{readStatus}
+        </if>
         LIMIT #{offset},#{limit}
     </select>
 
@@ -70,6 +77,13 @@
         </if>
         <if test="love != null and love != ''">
             and love = #{love}
+        </if>
+        <if test="readStatus != null and readStatus != ''">
+            and read_status = #{readStatus}
+        </if>
+        <if test="name != null and name != ''">
+            <bind name="pattern" value="'%' + name + '%'"/>
+            and `name` LIKE #{pattern}
         </if>
     </select>
 

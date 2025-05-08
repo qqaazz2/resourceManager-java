@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.resourcemanager.mapper.music.MusicMapper">
+    <resultMap id="musicList" type="com.example.resourcemanager.dto.music.MusicListItemDTO">
+        <id column="id" property="id"/>
+        <result column="files_id" property="filesId"/>
+        <result column="file_name" property="fileName"/>
+        <result column="title" property="title"/>
+        <result column="author" property="author"/>
+        <result column="cover" property="cover"/>
+        <result column="love" property="love"/>
+    </resultMap>
+
+    <select id="getList" resultMap="musicList"
+            parameterType="com.example.resourcemanager.dto.music.MusicListQueryCondition">
+        SELECT
+        music.id,
+        `title`,
+        `author`,
+        `love`,
+        `cover`,
+        file_name,
+        FROM
+        files
+        LEFT JOIN music ON files.id = music.files_id
+        WHERE files.deleted = 1 AND files.type = 4
+        <if test="folder != null and folder != ''">
+            and files.is_folder = #{folder}
+        </if>
+        ORDER BY `id` desc
+        LIMIT #{offset},#{limit}
+    </select>
+    <select id="count" resultType="int" parameterType="com.example.resourcemanager.dto.music.MusicListQueryCondition">
+        SELECT
+        count(*)
+        FROM
+        files
+        LEFT JOIN music ON files.id = music.files_id
+        WHERE files.deleted = 1 AND files.type = 4
+        <if test="folder != null and folder != ''">
+            and files.is_folder = #{folder}
+        </if>
+    </select>
+</mapper>

@@ -28,4 +28,6 @@ public interface SeriesService {
     void updateCover(Integer id,Integer coverId);
 
     Date updateLastReadTime(Integer id);
+
+    SeriesListDTO randomData();
 }

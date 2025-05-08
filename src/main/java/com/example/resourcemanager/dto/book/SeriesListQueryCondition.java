@@ -10,6 +10,7 @@ public class SeriesListQueryCondition extends QueryCondition {
     @NotNull(groups = {SpecificCheck.class}, message = "喜欢状态不可为空")
     private Integer love;
     private Integer status;
+    private String name;
 
     private Integer overStatus;
 
@@ -49,6 +50,14 @@ public class SeriesListQueryCondition extends QueryCondition {
 
     public void setOverStatus(Integer overStatus) {
         this.overStatus = overStatus;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
 

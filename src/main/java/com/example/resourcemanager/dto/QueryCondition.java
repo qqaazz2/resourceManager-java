@@ -8,6 +8,8 @@ public class QueryCondition {
     private Integer limit;
     private Integer offset;
 
+    public QueryCondition(){};
+
     public QueryCondition(Integer page) {
         this.page = page;
     }

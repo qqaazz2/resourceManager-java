@@ -1,0 +1,12 @@
+package com.example.resourcemanager.service.music;
+
+import com.example.resourcemanager.entity.music.MusicAlbumBind;
+import com.example.resourcemanager.entity.music.MusicAuthorBind;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public interface MusicAlbumBindService {
+    List<MusicAlbumBind> createData(List<MusicAlbumBind> list);
+}

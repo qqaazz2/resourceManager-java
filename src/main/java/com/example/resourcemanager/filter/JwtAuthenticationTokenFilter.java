@@ -20,6 +20,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.security.sasl.AuthenticationException;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @AllArgsConstructor
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
@@ -30,7 +32,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = tokenService.getRequestToken(request);
-            System.out.println(request.getRequestURI());
+//            Pattern p = Pattern.compile("files");
+//            Matcher m = p.matcher(request.getRequestURI());
+//            while (m.find()) {
+//                filterChain.doFilter(request, response);
+//                return;
+//            }
             if ("/user/login".equals(request.getRequestURI()) || "/user/code".equals(request.getRequestURI())) {
                 filterChain.doFilter(request, response);
                 return;

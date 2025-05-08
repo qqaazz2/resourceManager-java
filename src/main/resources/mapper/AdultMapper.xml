@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.resourcemanager.mapper.adult.AdultMapper">
+    <resultMap id="adultDetail" type="com.example.resourcemanager.dto.adult.AdultDetailDTO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="number" property="number"/>
+        <result column="synopsis" property="synopsis"/>
+        <result column="date" property="date"/>
+        <result column="minutes" property="minutes"/>
+        <result column="bt_url" property="btUrl"/>
+        <result column="url" property="url"/>
+        <result column="produce" property="produce"/>
+        <result column="series" property="series"/>
+        <result column="download" property="download"/>
+        <result column="author_id" property="authorId"/>
+        <result column="author_name" property="authorName"/>
+        <result column="author_avatar" property="authorAvatar"/>
+        <result column="tag_id" property="tagId"/>
+        <result column="tag_name" property="tagName"/>
+        <result column="tag_synopsis" property="tagSynopsis"/>
+    </resultMap>
+
+
+    <select id="getDetail" resultMap="adultDetail" parameterType="java.lang.Integer">
+        SELECT
+        adult.id,
+        adult.`name`,
+        number,
+        adult.synopsis,
+        adult.`date`,
+        minutes,
+        bt_url AS btUrl,
+        url,
+        produce,
+        series,
+        download,
+        adult_author.id AS authorId,
+        adult_author.`name` AS authorName,
+        adult_author.avatar AS authorAvatar,
+        adult_tags.id AS tagId,
+        adult_tags.`name` AS tagName,
+        adult_tags.synopsis AS tagSynopsis
+        FROM
+        adult
+        LEFT JOIN adult_author_bind ON adult.id = adult_author_bind.adult_id AND adult_author_bind.deleted = 1
+        LEFT JOIN adult_author ON adult_author_bind.adult_author_id = adult_author.id AND adult_author.deleted = 1
+        LEFT JOIN adult_bind ON adult.id = adult_author_bind.adult_id AND adult_bind.deleted = 1
+        LEFT JOIN adult_tags ON adult_bind.adult_tags_id = adult_tags.id AND adult_tags.deleted = 1
+        WHERE adult.deleted = 1 AND adult.id = #{id}
+    </select>
+</mapper>

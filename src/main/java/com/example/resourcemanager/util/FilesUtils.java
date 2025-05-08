@@ -8,6 +8,9 @@ import com.example.resourcemanager.service.impl.FilesServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.tika.Tika;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.FFmpegFrameRecorder;
+import org.bytedeco.javacv.Frame;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +45,7 @@ public class FilesUtils {
                 files.setFile(file);
                 map.put(files.getFileName(), files);
             }
-            list.add(createFiles(file, type, -1,0));
+            list.add(createFiles(file, type, -1, 0));
         }
         filesService.saveBatch(list);
         map.putAll(list.stream().collect(Collectors.toMap(Files::getFileName, files -> files)));
@@ -53,14 +56,14 @@ public class FilesUtils {
         Map<String, Files> map = new HashMap<>();
         List<Files> list = new ArrayList<>();
         for (File file : fileList) {
-            list.add(createFiles(file, type, -1,0));
+            list.add(createFiles(file, type, -1, 0));
         }
         filesService.saveBatch(list);
         map.putAll(list.stream().collect(Collectors.toMap(Files::getFileName, files -> files)));
         return map;
     }
 
-    public Files createFiles(File file, Integer type, Integer parentId,Integer sort) {
+    public Files createFiles(File file, Integer type, Integer parentId, Integer sort) {
         Files files = new Files();
         try {
             files.setFileName(file.getName());
@@ -80,7 +83,7 @@ public class FilesUtils {
         return files;
     }
 
-    public Files createFolder(File file, Integer parentId, Integer type,Integer size) {
+    public Files createFolder(File file, Integer parentId, Integer type, Integer size) {
         Files files = new Files();
         files.setFileName(file.getName());
         files.setFilePath(file.getPath());
@@ -174,7 +177,7 @@ public class FilesUtils {
         return (float) (width * height) / 1000000;
     }
 
-    public void editMetaData(File file){
+    public void editMetaData(File file) {
         Path paths = Paths.get(file.getPath() + File.separator + metaName);
         try {
             ObjectMapper objectMapper = new ObjectMapper();

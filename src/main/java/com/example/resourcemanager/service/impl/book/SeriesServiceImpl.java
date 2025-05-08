@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 @Service
 @Transactional
@@ -95,5 +96,17 @@ public class SeriesServiceImpl extends ServiceImpl<SeriesMapper, Series> impleme
         if (!isTrue) throw new BizException("4000", "更新最后一次阅读时间失败");
 
         return date;
+    }
+
+    @Override
+    public SeriesListDTO randomData() {
+        LambdaQueryWrapper<Series> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(Series::getId);
+        List<Series> list = this.list(queryWrapper);
+        Random random = new Random();
+        int index = random.nextInt(list.size());
+
+        Series series = list.get(index);
+        return this.getDetails(series.getId());
     }
 }
