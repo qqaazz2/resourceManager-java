@@ -25,7 +25,7 @@ public class PictureController {
 
     @GetMapping("scanning")
     public ResultResponse scanning(@RequestParam(defaultValue = "", required = false) String path) {
-        pictureTask.start(path);
+        pictureTask.startOrRestart(path);
         return ResultResponse.success();
     }
 

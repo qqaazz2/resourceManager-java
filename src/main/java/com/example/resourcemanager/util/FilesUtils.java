@@ -8,9 +8,6 @@ import com.example.resourcemanager.service.impl.FilesServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.apache.tika.Tika;
-import org.bytedeco.javacv.FFmpegFrameGrabber;
-import org.bytedeco.javacv.FFmpegFrameRecorder;
-import org.bytedeco.javacv.Frame;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

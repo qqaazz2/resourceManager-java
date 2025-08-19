@@ -2,25 +2,34 @@ package com.example.resourcemanager.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.resourcemanager.entity.Files;
 import com.example.resourcemanager.entity.books.Books;
 import com.example.resourcemanager.mapper.BooksDetailsMapper;
 import com.example.resourcemanager.mapper.BooksMapper;
+import com.example.resourcemanager.mapper.FilesMapper;
 import com.example.resourcemanager.service.BooksService;
+import com.example.resourcemanager.service.UploadService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class BooksServiceImpl extends ServiceImpl<BooksMapper, Books> implements BooksService {
+    @Resource
+    UploadService uploadService;
 
     @Resource
     BooksDetailsMapper booksDetailsMapper;
 
     Map<Integer, String> filedMap = Map.of(1, "id", 2, "books.add_time", 3, "books.edit_time", 4, "last_read");
 
+    @Resource
+    FilesMapper filesMapper;
 
     @Override
     public Map<String, Object> getBooksList(int page, int size, int sortFiled, String sort) {

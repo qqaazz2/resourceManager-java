@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public interface SeriesService {
@@ -25,9 +26,14 @@ public interface SeriesService {
 
     SeriesListDTO getDetails(Integer id);
 
-    void updateCover(Integer id,Integer coverId);
+    Integer getIdByFilesId(Integer id);
+
+    void updateCover(Integer id,String cover);
 
     Date updateLastReadTime(Integer id);
 
+    Date updateLastReadTimeByFilesId(Integer id);
+
     SeriesListDTO randomData();
+
 }

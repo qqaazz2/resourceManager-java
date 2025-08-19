@@ -22,6 +22,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -86,6 +87,12 @@ public class ComicTask extends AsyncTask {
             executor.shutdownNow();
         }
         coverList = filesService.createFiles(coverList);
+        coverList = coverList.stream()
+                .filter(f -> f.getHash() != null) // 避免 hash 为 null 的异常
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toMap(Files::getHash, Function.identity(), (oldVal, newVal) -> oldVal),
+                        map -> new ArrayList<>(map.values())
+                ));
         Map<String, Integer> map = coverList.stream().collect(Collectors.toMap(Files::getFileName, Files::getId));
         for (Comic comic : comics) {
             Integer coverId = null;
@@ -147,7 +154,7 @@ class GetComicTask implements Callable<Comic> {
 
             while ((entry = zipInputStream.getNextEntry()) != null) {
                 if (!entry.isDirectory()) {
-                    if(fileCount == 0) zipInputStream.transferTo(outputStream);
+                    if (fileCount == 0) zipInputStream.transferTo(outputStream);
                     fileCount++;
                 }
                 zipInputStream.closeEntry();  // 关闭当前条目
@@ -165,7 +172,8 @@ class GetComicTask implements Callable<Comic> {
                 ComicTask.folderMap.put(files.getParentId(), comicFolder);
             }
 
-            if(!isExists) ComicTask.coverList.add(filesUtils.createFiles(cover, 0, ComicTask.coverFiles.getId(), files.getSort()));
+            if (!isExists)
+                ComicTask.coverList.add(filesUtils.createFiles(cover, 0, ComicTask.coverFiles.getId(), files.getSort()));
 
             return comic;
         } catch (FileNotFoundException e) {

@@ -66,12 +66,8 @@ public class UserController {
     }
 
     @PostMapping("/uploadCover")
-    public ResultResponse uploadCover(@RequestParam MultipartFile[] files) {
-        String[] formats = {"jpg", "png"};
-        String pathName = "/user";
-        List<File> list = uploadFile.upload(files, pathName, formats);
-        userService.updateImage(list.get(0).getPath());
-        return ResultResponse.success(list.get(0).getPath());
+    public ResultResponse uploadCover(@RequestParam MultipartFile file) {
+        return ResultResponse.success(userService.updateImage(file));
     }
 
     @PreAuthorize("@customPermissionEvaluator.hasPermission(authentication,null,1)")

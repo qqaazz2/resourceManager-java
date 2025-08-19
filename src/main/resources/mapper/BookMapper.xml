@@ -5,6 +5,7 @@
 <mapper namespace="com.example.resourcemanager.mapper.book.BookMapper">
     <resultMap id="bookList" type="com.example.resourcemanager.dto.book.BookListDTO">
         <id column="id" property="id"/>
+        <result column="files_id" property="filesId"/>
         <result column="file_path" property="filePath"/>
         <result column="is_folder" property="isFolder"/>
         <result column="name" property="name"/>
@@ -13,7 +14,7 @@
         <result column="progress" property="progress"/>
         <result column="status" property="status"/>
         <result column="publishing" property="publishing"/>
-        <result column="cover_path" property="coverPath"/>
+        <result column="cover" property="cover"/>
         <result column="parent_id" property="parentId"/>
         <result column="read_tag_num" property="readTagNum"/>
     </resultMap>
@@ -21,30 +22,39 @@
     <resultMap id="bookCover" type="com.example.resourcemanager.dto.book.BookCoverDTO">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
-        <result column="cover_id" property="coverId"/>
-        <result column="cover_path" property="coverPath"/>
+        <result column="cover" property="cover"/>
     </resultMap>
 
-    <select id="getList" resultMap="bookList" parameterType="com.example.resourcemanager.dto.book.BookListQueryCondition">
+    <resultMap id="bookFileCover" type="com.example.resourcemanager.entity.book.BookFileCover">
+        <id column="id" property="id"/>
+        <result column="cover" property="cover"/>
+        <result column="hash" property="hash"/>
+        <result column="file_name" property="parentFileName"/>
+        <result column="name" property="name"/>
+    </resultMap>
+
+    <select id="getList" resultMap="bookList"
+            parameterType="com.example.resourcemanager.dto.book.BookListQueryCondition">
         SELECT
-        files.id,
+        book.id,
+        book.files_id,
         files.file_path,
         files.is_folder,
-        `name`,
+        `modifiable_name` as `name`,
         author,
         `profile`,
         progress,
         book.`status`,
         read_tag_num,
         publishing,
-        cover.file_path AS cover_path,
-        book.cover_id,
+        book.cover,
         files.parent_id
         FROM
-        files
-        LEFT JOIN book ON files.id = book.files_id
-        LEFT JOIN files AS cover ON book.cover_id = cover.id
-        WHERE files.deleted = 1 AND files.type = 1
+        book
+        LEFT JOIN files ON book.files_id = files.id
+        WHERE
+        files.deleted = 1
+        AND files.type = 1
         <if test="id != null and id != ''">
             and files.parent_id = #{id}
         </if>
@@ -54,13 +64,12 @@
         <if test="folder != null and folder != ''">
             and files.is_folder = #{folder}
         </if>
-        ORDER BY `name`
+        ORDER BY `modifiable_name`
         LIMIT #{offset},#{limit}
     </select>
     <select id="count" resultType="int" parameterType="com.example.resourcemanager.dto.book.BookListQueryCondition">
-        SELECT count(*) FROM files
-        LEFT JOIN book ON files.id = book.files_id
-        LEFT JOIN files AS cover ON book.cover_id = cover.id
+        SELECT count(*) FROM book
+        LEFT JOIN files ON book.files_id = files.id
         WHERE files.deleted = 1 AND files.type = 1
         <if test="id != null and id != ''">
             and files.parent_id = #{id}
@@ -75,25 +84,64 @@
 
     <select id="getListByParentId" resultMap="bookList" parameterType="java.lang.Integer">
         SELECT
-            files.id,
-            book.`status`,
-            files.parent_id
+        book.id,
+        book.files_id,
+        book.`status`,
+        files.parent_id
         FROM
-            files
-        LEFT JOIN book ON files.id = book.files_id
+        book
+        LEFT JOIN files ON book.files_id = files.id
         WHERE files.deleted = 1 AND files.type = 1 AND files.parent_id = #{id}
     </select>
 
     <select id="getCoverList" resultMap="bookCover" parameterType="java.lang.Integer">
         SELECT
-            book.id,
-            name,
-            cover.id as cover_id,
-            cover.file_path as cover_path
+        book.id,
+        `modifiable_name` as `name`,
+        book.cover
         FROM
-            files
-        LEFT JOIN book ON files.id = book.files_id
-        LEFT JOIN files AS cover ON book.cover_id = cover.id
+        book
+        LEFT JOIN files ON book.files_id = files.id
         WHERE files.deleted = 1 AND cover.type = 0 AND files.parent_id = #{id}
+    </select>
+
+    <select id="getRecent" resultMap="bookList">
+        SELECT
+        book.id,
+        book.files_id,
+        files.file_path,
+        files.is_folder,
+        `modifiable_name` as `name`,
+        author,
+        `profile`,
+        progress,
+        book.`status`,
+        read_tag_num,
+        publishing,
+        book.cover,
+        files.parent_id
+        FROM
+        book
+        LEFT JOIN files ON book.files_id = files.id
+        WHERE
+        files.deleted = 1
+        AND files.type = 1
+        AND book.status = 3
+        ORDER BY `read_time` DESC
+        LIMIT 1
+    </select>
+
+    <select id="getBookCover" resultMap="bookFileCover" parameterType="java.lang.Integer">
+        SELECT
+        book.id,
+        book.cover,
+        files.`hash`,
+        files.modifiable_name as name,
+        parent.file_name
+        FROM
+        book
+        INNER JOIN files ON book.files_id = files.id
+        INNER JOIN files AS parent ON files.parent_id = parent.id
+        WHERE book.id = #{id}
     </select>
 </mapper>

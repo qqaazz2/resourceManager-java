@@ -6,6 +6,6 @@ import lombok.Data;
 public class BookCoverDTO {
     private Integer id;
     private String name;
-    private Integer coverId;
+    private String cover;
     private String coverPath;
 }

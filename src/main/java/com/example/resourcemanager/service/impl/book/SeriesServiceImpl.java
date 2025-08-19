@@ -9,6 +9,7 @@ import com.example.resourcemanager.dto.book.SeriesListDTO;
 import com.example.resourcemanager.dto.book.SeriesListQueryCondition;
 import com.example.resourcemanager.entity.book.Series;
 import com.example.resourcemanager.mapper.book.SeriesMapper;
+import com.example.resourcemanager.service.UploadService;
 import com.example.resourcemanager.service.book.SeriesService;
 import com.example.resourcemanager.util.ValidationUtils;
 import jakarta.annotation.Resource;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 @Service
@@ -25,6 +27,9 @@ import java.util.Random;
 public class SeriesServiceImpl extends ServiceImpl<SeriesMapper, Series> implements SeriesService {
     @Resource
     SeriesMapper seriesMapper;
+
+    @Resource
+    UploadService uploadService;
 
     @Override
     public List<Series> createData(List<Series> list) {
@@ -44,6 +49,8 @@ public class SeriesServiceImpl extends ServiceImpl<SeriesMapper, Series> impleme
     @Override
     public PageVO<SeriesListDTO> getList(SeriesListQueryCondition seriesListQueryCondition) {
         List<SeriesListDTO> list = seriesMapper.getList(seriesListQueryCondition);
+        list.stream().forEach(item -> item.setMinioCover(uploadService.getObject(item.getCover())));
+        System.out.println(list);
         Integer count = seriesMapper.count(seriesListQueryCondition);
         return new PageVO(seriesListQueryCondition.getLimit(), seriesListQueryCondition.getPage(), count, list);
     }
@@ -75,14 +82,25 @@ public class SeriesServiceImpl extends ServiceImpl<SeriesMapper, Series> impleme
     @Override
     public SeriesListDTO getDetails(Integer id) {
         SeriesListDTO seriesListDTO = seriesMapper.getOne(id);
+        seriesListDTO.setMinioCover(uploadService.getObject(seriesListDTO.getCover()));
         if (seriesListDTO == null) throw new BizException("4000", "系列信息数据不存在");
         return seriesListDTO;
     }
 
     @Override
-    public void updateCover(Integer id, Integer coverId) {
+    public Integer getIdByFilesId(Integer id) {
+        LambdaQueryWrapper<Series> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(Series::getFilesId,id).select(Series::getId);
+        Series series = this.getOne(lambdaQueryWrapper);
+        if (series == null) throw new BizException("4000", "系列信息数据不存在");
+
+        return series.getId();
+    }
+
+    @Override
+    public void updateCover(Integer id, String cover) {
         LambdaUpdateWrapper<Series> updateWrapper = new LambdaUpdateWrapper();
-        updateWrapper.eq(Series::getId, id).set(Series::getCoverId, coverId);
+        updateWrapper.eq(Series::getId, id).set(Series::getCover, cover);
         Boolean isTrue = this.update(updateWrapper);
         if (!isTrue) throw new BizException("4000", "修改系列封面失败");
     }
@@ -92,6 +110,17 @@ public class SeriesServiceImpl extends ServiceImpl<SeriesMapper, Series> impleme
         Date date = new Date();
         LambdaUpdateWrapper<Series> updateWrapper = new LambdaUpdateWrapper();
         updateWrapper.eq(Series::getId, id).set(Series::getLastReadTime, date);
+        Boolean isTrue = this.update(updateWrapper);
+        if (!isTrue) throw new BizException("4000", "更新最后一次阅读时间失败");
+
+        return date;
+    }
+
+    @Override
+    public Date updateLastReadTimeByFilesId(Integer id) {
+        Date date = new Date();
+        LambdaUpdateWrapper<Series> updateWrapper = new LambdaUpdateWrapper();
+        updateWrapper.eq(Series::getFilesId, id).set(Series::getLastReadTime, date);
         Boolean isTrue = this.update(updateWrapper);
         if (!isTrue) throw new BizException("4000", "更新最后一次阅读时间失败");
 

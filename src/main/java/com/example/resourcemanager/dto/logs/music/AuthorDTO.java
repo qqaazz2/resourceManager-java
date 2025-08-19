@@ -1,8 +1,6 @@
-package com.example.resourcemanager.dto.music;
+package com.example.resourcemanager.dto.logs.music;
 
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 public class AuthorDTO {

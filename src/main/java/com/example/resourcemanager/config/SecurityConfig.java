@@ -27,6 +27,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,9 +40,6 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
     private final ApplicationEventPublisher applicationEventPublisher;
-
-    @Resource
-    private CustomPermissionEvaluator customPermissionEvaluator;
 
     @Resource
     UserMapper userMapper;
@@ -56,6 +56,9 @@ public class SecurityConfig {
                 .sessionManagement(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new JwtAuthenticationTokenFilter(tokenService, redisTemplate), UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))//关闭
+                .securityContext(securityContext -> securityContext
+                        .securityContextRepository(new DelegatingSecurityContextRepository(new RequestAttributeSecurityContextRepository(), new HttpSessionSecurityContextRepository()))
+                )
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/user/login").permitAll()
                         .requestMatchers("/user/code").permitAll()
 //                        .requestMatchers("/files/**").permitAll()

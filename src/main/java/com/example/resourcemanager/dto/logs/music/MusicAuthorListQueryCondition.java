@@ -1,4 +1,4 @@
-package com.example.resourcemanager.dto.music;
+package com.example.resourcemanager.dto.logs.music;
 
 import com.example.resourcemanager.dto.QueryCondition;
 import lombok.Data;

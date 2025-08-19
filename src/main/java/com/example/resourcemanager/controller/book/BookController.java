@@ -7,14 +7,17 @@ import com.example.resourcemanager.entity.book.Book;
 import com.example.resourcemanager.service.book.BookService;
 import com.example.resourcemanager.task.BookTask;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/book")
 public class BookController {
@@ -26,7 +29,7 @@ public class BookController {
 
     @GetMapping("scanning")
     public ResultResponse scanning(@RequestParam(defaultValue = "", required = false) String path) {
-        bookTask.start(path);
+        bookTask.startOrRestart(path);
         return ResultResponse.success();
     }
 
@@ -44,13 +47,28 @@ public class BookController {
     @PostMapping("updateProgress")
     public ResultResponse updateProgress(@RequestBody @Validated({Update.class}) BookListDTO book) {
         Map<String, Object> map = bookService.updateProgress(book);
-        return ResultResponse.success(map);
+        return ResultResponse.success(map, "更新阅读进度成功");
     }
 
     @GetMapping("getCoverList")
     public ResultResponse getCoverList(Integer id) {
         Map<String, List<BookCoverDTO>> map = new HashMap<>();
-        map.put("list",bookService.getCoverList(id));
+        map.put("list", bookService.getCoverList(id));
         return ResultResponse.success(map);
+    }
+
+    @GetMapping("getRecent")
+    public ResultResponse getRecent() {
+        return ResultResponse.success(bookService.getRecent());
+    }
+
+    @GetMapping("getOverview")
+    public ResultResponse getOverview() {
+        return ResultResponse.success(bookService.getOverview());
+    }
+
+    @PostMapping("/changeCover")
+    public ResultResponse changeCover(@RequestParam MultipartFile file, @RequestParam Integer id) {
+        return ResultResponse.success(bookService.changeCover(id, file));
     }
 }

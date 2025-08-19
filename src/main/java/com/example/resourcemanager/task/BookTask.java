@@ -1,20 +1,21 @@
 package com.example.resourcemanager.task;
 
 import com.example.resourcemanager.common.BizException;
+import com.example.resourcemanager.common.TaskInterruptedException;
 import com.example.resourcemanager.entity.Files;
 import com.example.resourcemanager.entity.book.Book;
 import com.example.resourcemanager.entity.book.Series;
 import com.example.resourcemanager.service.FilesService;
+import com.example.resourcemanager.service.UploadService;
 import com.example.resourcemanager.service.book.BookService;
 import com.example.resourcemanager.service.book.SeriesService;
-import com.example.resourcemanager.service.picture.PictureService;
 import com.example.resourcemanager.util.FilesUtils;
 import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import nl.siegmann.epublib.domain.Author;
 import nl.siegmann.epublib.domain.Metadata;
 import nl.siegmann.epublib.epub.EpubReader;
-import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 @Async
+@Slf4j
 @Component
 public class BookTask extends AsyncTask {
     @Resource
@@ -36,13 +37,16 @@ public class BookTask extends AsyncTask {
     @Resource
     FilesService filesService;
 
-    public static List<Files> coverList = new ArrayList<>();
-    public static List<Files> epubList = new ArrayList<>();
-    public static Integer parentId = -1;
+    @Resource
+    UploadService uploadService;
+
+
+    public Map<String, String> coverMap = new ConcurrentHashMap<>();
+    public List<Files> epubList = new ArrayList<>();
     public List<Book> bookList = new ArrayList<>();
-    public List<Series> seriesList = new ArrayList<>();
+    public Map<Integer, Series> seriesMap = new HashMap<>();
     public Map<Integer, Integer> updateSeries = new HashMap<>();
-    public Map<Integer, Files> folderMap = new HashMap<>();
+    public List<Files> folderList = new ArrayList<>();
 
     public BookTask() {
         basePath = "books";
@@ -52,32 +56,34 @@ public class BookTask extends AsyncTask {
     @Override
     @Transactional
     public void create() {
-        coverList.clear();
         epubList.clear();
-        folderMap.clear();
+        folderList.clear();
         bookList.clear();
-        seriesList.clear();
+        seriesMap.clear();
         updateSeries.clear();
 
-        createFiles.removeIf(value -> value.getFileName().equals("cover"));
-        createFiles.removeIf(value -> value.getFileType().equals("image/jpeg"));
         if (createFiles.size() == 0) return;
-
-        createCover();
-
+        checkInterrupted();
         deepCreate(createFiles, 1);
+        setSeries();
         List<Future<Book>> futureList = new ArrayList<>();
         ExecutorService executor = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(5000));
         for (Files files : epubList) {
-            Future<Book> future = executor.submit(new GetBookCoverTask(files, filesUtils));
+            checkInterrupted(() -> executor.shutdownNow());
+            Future<Book> future = executor.submit(new GetBookCoverTask(files, filesUtils, uploadService, this.coverMap));
             futureList.add(future);
         }
-
+        checkInterrupted();
         for (Future<Book> future : futureList) {
+            checkInterrupted();
             try {
-                System.out.println("运行中");
                 Book book = future.get();
                 bookList.add(book);
+            } catch (InterruptedException e) {
+                checkInterrupted();
+                Thread.currentThread().interrupt();
+            } catch (TaskInterruptedException e) {
+                checkInterrupted();
             } catch (Exception e) {
                 System.out.println("error");
                 e.printStackTrace();
@@ -89,73 +95,83 @@ public class BookTask extends AsyncTask {
         if (!executor.isShutdown()) {
             executor.shutdownNow();
         }
-        System.out.println(coverList.size());
-        coverList = filesService.createFiles(coverList);
-        Map<String, Integer> map = coverList.stream().collect(Collectors.toMap(Files::getFileName, Files::getId));
+
         List<Integer> list = new ArrayList<>();
         for (Book book : bookList) {
-            Integer coverId = null;
-            if (map.containsKey(book.getHash() + ".jpg")) {
-                coverId = map.get(book.getHash() + ".jpg");
-                book.setCoverId(coverId);
+            checkInterrupted();
+            String coverPath = null;
+            if (coverMap.containsKey(book.getHash())) {
+                coverPath = coverMap.get(book.getHash());
+                book.setCover(coverPath);
             }
 
-            if (!list.contains(book.getParentId()) && folderMap.size() > 0) {
-                System.out.println(folderMap);
-                System.out.println(book.getParentId());
-                Series series = new Series();
-                series.setFilesId(book.getParentId());
-                if (coverId != null) {
-                    series.setCoverId(coverId);
+            int parentId = book.getParentId();
+            if (!list.contains(book.getParentId()) && seriesMap.containsKey(parentId)) {
+                Series series = seriesMap.get(parentId);
+                if (coverPath != null) {
+                    series.setCover(coverPath);
                 }
-                series.setName(folderMap.get(book.getParentId()).getFileName());
-                series.setIsChild(folderMap.get(book.getParentId()).getParentId() == null ? 1 : 2);
                 series.setAuthor(book.getAuthor());
                 series.setProfile(book.getProfile());
-                series.setNum(folderMap.get(book.getParentId()).getFileSize().intValue());
-                seriesList.add(series);
-                list.add(book.getParentId());
+                seriesMap.put(parentId, series);
+                list.add(parentId);
             }
         }
-        System.out.println(bookService+"bookService");
-        System.out.println(seriesList+"seriesList");
-        if (seriesList.size() > 0) seriesService.createData(seriesList);
-        bookService.createData(bookList);
 
+        if (seriesMap.size() > 0) seriesService.createData(seriesMap.values().stream().toList());
+        if (bookList.size() > 0) bookService.createData(bookList);
+        log.info("本次共扫描{}本书籍，{}个系列", bookList.size(), seriesMap.size());
         updateSeries.forEach((key, value) -> {
+            checkInterrupted();
             seriesService.updateNum(key, value);
         });
     }
 
     public void deepCreate(List<Files> list, Integer index) {
+        checkInterrupted();
         list = filesService.createFiles(list);
         for (Files files : list) {
-            if (files.getIsFolder() == 1) folderMap.put(files.getId(), files);
+            checkInterrupted();
+            if (files.getIsFolder() == 1) folderList.add(files);
             Boolean isTrue = files.getFileName().substring(files.getFileName().lastIndexOf(".") + 1).toLowerCase().equals("epub");
             if (files.getIsFolder() == 2 && isTrue) {
                 epubList.add(files);
-
                 if (files.getParentId() != -1 && index == 1) {
                     Integer num = files.getFile().getParentFile().list().length;
                     updateSeries.put(files.getParentId(), num);
                 }
             }
 
-            if (files.getChild() == null) continue;
+            if (files.getChild() == null || files.getChild().size() == 0) continue;
             List<Files> childes = files.getChild().stream().peek(value -> value.setParentId(files.getId())).toList();
             deepCreate(childes, index += 1);
         }
     }
+
+    public void setSeries() {
+        for (Files files : folderList) {
+            Series series = new Series();
+            series.setFilesId(files.getId());
+            series.setFilesId(files.getId());
+            series.setNum(files.getFileSize().intValue());
+            seriesMap.put(files.getId(), series);
+            checkInterrupted();
+        }
+    }
 }
 
+@Slf4j
 @AllArgsConstructor
 class GetBookCoverTask implements Callable<Book> {
     Files files;
     FilesUtils filesUtils;
+    UploadService uploadService;
+    Map<String, String> coverMap;
 
     @Override
     public Book call() {
         Book book = new Book();
+        if (Thread.currentThread().isInterrupted()) throw new TaskInterruptedException();
         try (InputStream inputStream = new FileInputStream(files.getFile())) {
             EpubReader epubReader = new EpubReader();
             nl.siegmann.epublib.domain.Book epubBook = epubReader.readEpub(inputStream);
@@ -175,21 +191,24 @@ class GetBookCoverTask implements Callable<Book> {
             book.setFilesId(files.getId());
             book.setHash(files.getHash());
             book.setParentId(files.getParentId());
-            book.setName(files.getFileName());
             try {
+                if (Thread.currentThread().isInterrupted()) throw new TaskInterruptedException();
                 if (epubBook.getCoverImage() == null) return book;
                 byte[] data = epubBook.getCoverImage().getData();
-                File cover = new File(BookTask.coverFiles.getFilePath() + File.separator + files.getHash() + ".jpg");
-                if (!cover.exists()) {
-                    try (OutputStream outputStream = new FileOutputStream(cover)) {
-                        outputStream.write(data);
-                    }
-                    BookTask.coverList.add(filesUtils.createFiles(cover, 0, BookTask.coverFiles.getId(),0));
-                }
+                String cover = files.getFile().getParent() + File.separator + files.getHash() + ".jpg";
+                cover = uploadService.upload(data, cover, "image/jpeg");
+                coverMap.put(files.getHash(), cover);
+            } catch (TaskInterruptedException e) {
+                throw e;
             } catch (Exception e) {
+                log.error("{}封面获取失败：", files.getFileName(), e.getMessage());
                 return book;
             }
+            if (Thread.currentThread().isInterrupted()) throw new TaskInterruptedException();
+        } catch (TaskInterruptedException e) {
+            throw e;
         } catch (Exception e) {
+            log.error("书籍{}扫描失败：{}", files.getFileName(), e.getMessage());
             e.printStackTrace();
         }
         return book;

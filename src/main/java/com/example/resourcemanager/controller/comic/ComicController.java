@@ -37,7 +37,7 @@ public class ComicController {
 
     @GetMapping("/scanning")
     public ResultResponse upload(@RequestParam(required = false, defaultValue = "") String path) {
-        comicTask.start(path);
+        comicTask.startOrRestart(path);
         return ResultResponse.success();
     }
 

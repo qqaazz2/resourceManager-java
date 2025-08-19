@@ -5,6 +5,7 @@ import com.example.resourcemanager.common.ResultResponse;
 import com.example.resourcemanager.dto.UserInfo;
 import com.example.resourcemanager.entity.User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -25,5 +26,5 @@ public interface UserService extends IService<User> {
 
     void updateMysteryPassWord(String oldPassWord,String newPassword);
 
-    void updateImage(String cover);
+    String updateImage(MultipartFile multipartFile);
 }

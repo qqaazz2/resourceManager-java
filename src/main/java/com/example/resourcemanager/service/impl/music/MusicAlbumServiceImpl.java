@@ -1,22 +1,16 @@
 package com.example.resourcemanager.service.impl.music;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.resourcemanager.common.BizException;
 import com.example.resourcemanager.dto.PageVO;
-import com.example.resourcemanager.dto.adult.AdultTagDTO;
-import com.example.resourcemanager.dto.book.BookListDTO;
-import com.example.resourcemanager.dto.music.AlbumDetailDTO;
-import com.example.resourcemanager.dto.music.AuthorItem;
-import com.example.resourcemanager.dto.music.MusicAlbumListQueryCondition;
-import com.example.resourcemanager.dto.music.MusicData;
-import com.example.resourcemanager.entity.adult.AdultBind;
-import com.example.resourcemanager.entity.adult.AdultTags;
+import com.example.resourcemanager.dto.logs.music.AlbumDetailDTO;
+import com.example.resourcemanager.dto.logs.music.AuthorItem;
+import com.example.resourcemanager.dto.logs.music.MusicAlbumListQueryCondition;
+import com.example.resourcemanager.dto.logs.music.MusicData;
 import com.example.resourcemanager.entity.music.*;
 import com.example.resourcemanager.mapper.music.*;
 import com.example.resourcemanager.service.music.MusicAlbumService;
-import com.example.resourcemanager.service.music.MusicAuthorService;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;

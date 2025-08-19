@@ -29,6 +29,14 @@ public class ResultResponse {
         return resultResponse;
     }
 
+    public static ResultResponse success(Object object,String msg) {
+        ResultResponse resultResponse = new ResultResponse();
+        resultResponse.setMessage(msg);
+        resultResponse.setCode(ExceptionEnum.SUCCESS.getResultCode());
+        resultResponse.setResult(object);
+        return resultResponse;
+    }
+
     public static ResultResponse error(BaseErrorInfoInterface baseErrorInfoInterface) {
         ResultResponse resultResponse = new ResultResponse(baseErrorInfoInterface);
         return resultResponse;

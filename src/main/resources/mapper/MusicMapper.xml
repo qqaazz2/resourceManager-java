@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.resourcemanager.mapper.music.MusicMapper">
-    <resultMap id="musicList" type="com.example.resourcemanager.dto.music.MusicListItemDTO">
+    <resultMap id="musicList" type="com.example.resourcemanager.dto.logs.music.MusicListItemDTO">
         <id column="id" property="id"/>
         <result column="files_id" property="filesId"/>
         <result column="file_name" property="fileName"/>
@@ -14,7 +14,7 @@
     </resultMap>
 
     <select id="getList" resultMap="musicList"
-            parameterType="com.example.resourcemanager.dto.music.MusicListQueryCondition">
+            parameterType="com.example.resourcemanager.dto.logs.music.MusicListQueryCondition">
         SELECT
         music.id,
         `title`,
@@ -32,7 +32,7 @@
         ORDER BY `id` desc
         LIMIT #{offset},#{limit}
     </select>
-    <select id="count" resultType="int" parameterType="com.example.resourcemanager.dto.music.MusicListQueryCondition">
+    <select id="count" resultType="int" parameterType="com.example.resourcemanager.dto.logs.music.MusicListQueryCondition">
         SELECT
         count(*)
         FROM

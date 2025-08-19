@@ -12,10 +12,13 @@ import com.example.resourcemanager.entity.User;
 import com.example.resourcemanager.enums.ExceptionEnum;
 import com.example.resourcemanager.mapper.UserMapper;
 import com.example.resourcemanager.service.TokenService;
+import com.example.resourcemanager.service.UploadService;
 import com.example.resourcemanager.service.UserService;
+import com.example.resourcemanager.util.FileTypeUtils;
 import com.wf.captcha.ArithmeticCaptcha;
 import com.wf.captcha.SpecCaptcha;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,12 +27,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
     @Autowired
@@ -43,6 +49,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Resource
     PasswordEncoder passwordEncoder;
+
+    @Resource
+    UploadService uploadService;
 
     private static final String codeKey = "CodeKey:";
 
@@ -61,6 +70,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Map<String, Object> map = new HashMap<>();
         map.put("token", token);
         map.put("userInfo", userInfo);
+        log.info("用户登录");
         return map;
     }
 
@@ -100,8 +110,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             userInfo.setEmail(loginUser.getUser().getEmail());
             userInfo.setName(loginUser.getUser().getName());
             userInfo.setMystery(loginUser.getUser().getMystery());
-            userInfo.setCover(loginUser.getUser().getCover());
-            return userInfo;
+            try {
+                userInfo.setCover(uploadService.getObject(loginUser.getUser().getCover()));
+            }catch (Exception e){
+                log.error("用户图片获取失败");
+            }
+                return userInfo;
         }
         throw new BizException(ExceptionEnum.SIGNATURE_NOT_MATCH);
     }
@@ -124,7 +138,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, authentication.getCredentials());
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
             return userInfo;
         }
 
@@ -171,6 +184,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             updateWrapper.eq(User::getId, loginUser.getUser().getId());
             updateWrapper.set(User::getPassword, passwordEncoder.encode(newPassword));
             boolean isTrue = this.update(updateWrapper);
+
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, authentication.getCredentials());
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             if (!isTrue) throw new BizException("4000", "密码修改失败");
         } else {
             throw new BizException(ExceptionEnum.INTERNAL_SERVER_ERROR);
@@ -204,7 +220,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public void updateImage(String cover) {
+    public String updateImage(MultipartFile multipartFile) {
+        FileTypeUtils.validateFile(multipartFile,new String[]{"jpg"},10240);
+        String cover = "/user/cover.jpg";
         LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof LoginUser) {
@@ -212,8 +230,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             updateWrapper.eq(User::getId, loginUser.getUser().getId());
             updateWrapper.set(User::getCover, cover);
             boolean update = this.update(updateWrapper);
-
             if (!update) throw new BizException("4000", "修改头像失败");
+
+            try {
+                uploadService.upload(multipartFile.getBytes(),cover,"image/jpeg");
+            } catch (IOException e) {
+                throw new BizException("4000", "修改头像失败");
+            }
+
+            return uploadService.getObject(cover);
         } else {
             throw new BizException(ExceptionEnum.INTERNAL_SERVER_ERROR);
         }

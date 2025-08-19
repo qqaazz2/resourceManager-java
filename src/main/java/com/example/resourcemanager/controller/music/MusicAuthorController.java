@@ -1,9 +1,7 @@
 package com.example.resourcemanager.controller.music;
 
 import com.example.resourcemanager.common.ResultResponse;
-import com.example.resourcemanager.dto.music.MusicAlbumListQueryCondition;
-import com.example.resourcemanager.dto.music.MusicAuthorListQueryCondition;
-import com.example.resourcemanager.service.music.MusicAlbumService;
+import com.example.resourcemanager.dto.logs.music.MusicAuthorListQueryCondition;
 import com.example.resourcemanager.service.music.MusicAuthorService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;

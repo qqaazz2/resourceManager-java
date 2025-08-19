@@ -10,6 +10,8 @@ import java.util.Date;
 public class SeriesListDTO {
     private Integer id;
     private String name;
+    private String cover;
+    private String minioCover;
     private String author;
     private Integer overStatus;
     private Integer status;
@@ -17,6 +19,5 @@ public class SeriesListDTO {
     private String profile;
     private Date lastReadTime;
     private Integer num;
-    private String filePath;
     private Integer filesId;
 }

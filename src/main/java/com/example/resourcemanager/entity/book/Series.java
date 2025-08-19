@@ -18,9 +18,6 @@ public class Series {
 
     Integer filesId;
 
-    @NotNull(groups = {Update.class},message = "系列名称不能为空")
-    String name;
-
     String author;
 
     Integer overStatus;
@@ -38,7 +35,7 @@ public class Series {
 
     Integer num;
 
-    Integer coverId;
-
-    Integer isChild;
+    String cover;
+    String addTime;
+    String editTime;
 }

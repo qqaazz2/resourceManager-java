@@ -1,8 +1,8 @@
 package com.example.resourcemanager.service.music;
 
 import com.example.resourcemanager.dto.PageVO;
-import com.example.resourcemanager.dto.music.AlbumDetailDTO;
-import com.example.resourcemanager.dto.music.MusicAlbumListQueryCondition;
+import com.example.resourcemanager.dto.logs.music.AlbumDetailDTO;
+import com.example.resourcemanager.dto.logs.music.MusicAlbumListQueryCondition;
 import com.example.resourcemanager.entity.music.MusicAlbum;
 import org.springframework.stereotype.Service;
 

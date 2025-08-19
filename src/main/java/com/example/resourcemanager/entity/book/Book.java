@@ -15,10 +15,7 @@ public class Book {
 
     Integer filesId;
 
-    Integer coverId;
-
-    @NotNull(groups = {Update.class},message = "书籍名称不能为空")
-    String name;
+    String cover;
 
     String author;
 
@@ -33,6 +30,8 @@ public class Book {
     String publishing;
 
     Integer readTagNum;
+
+    String readTime;
 
     @TableField(exist = false)
     String hash;

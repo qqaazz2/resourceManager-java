@@ -6,6 +6,7 @@ import com.example.resourcemanager.dto.book.BookListDTO;
 import com.example.resourcemanager.dto.book.BookListQueryCondition;
 import com.example.resourcemanager.entity.book.Book;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -21,4 +22,10 @@ public interface BookService {
     Map<String,Object> updateProgress(BookListDTO bookListDTO);
 
     List<BookCoverDTO> getCoverList(Integer id);
+
+    BookListDTO getRecent();
+
+    Map<String,Integer> getOverview();
+
+    Map<String,String> changeCover(Integer id,MultipartFile file);
 }

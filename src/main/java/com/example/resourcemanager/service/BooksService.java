@@ -2,6 +2,7 @@ package com.example.resourcemanager.service;
 
 import com.example.resourcemanager.entity.books.Books;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
